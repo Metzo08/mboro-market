@@ -16,6 +16,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getToken();
@@ -76,6 +78,34 @@ export default function CheckoutPage() {
     );
   }
 
+  if (paymentUrl) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-white p-8 rounded-lg border border-gray-200 max-w-md mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Paiement</h2>
+          <p className="text-gray-600 mb-6">Montant à payer : {formatPrice(total)}</p>
+          <div className="space-y-4">
+            <a
+              href={paymentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 bg-green-600 text-white rounded-lg font-medium text-center hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="22" height="22" rx="2" ry="2"></rect><path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+              Payer avec PayDunya
+            </a>
+            <div className="text-xs text-gray-500 text-center">
+              Vous serez redirigé vers PayDunya pour finaliser le paiement.
+            </div>
+          </div>
+          <Button onClick={() => { setPaymentUrl(null); }} variant="outline" className="w-full">
+            Annuler et revenir à la commande
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -89,7 +119,7 @@ export default function CheckoutPage() {
         options: {},
       }));
 
-      const res = await api.post('/orders', {
+      const orderRes = await api.post('/orders', {
         userId: user.id,
         shopId: items[0].product.shopId,
         items: orderItems,
@@ -97,8 +127,15 @@ export default function CheckoutPage() {
         customerNote: '',
       });
 
-      clear();
-      setSuccess(true);
+      setOrderId(orderRes.data.id);
+
+      const payRes = await api.post('/payments/initialize', {
+        orderId: orderRes.data.id,
+        provider: 'paydunya',
+        paymentMethod: 'ONLINE',
+      });
+
+      setPaymentUrl(payRes.data.checkout_url || `https://sandbox.paydunya.com/checkout/${payRes.data.reference}`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erreur lors de la création de la commande');
     } finally {
