@@ -1,0 +1,433 @@
+=== ToUnicode for object 935 ===
+/CIDInit/ProcSet findresource begin
+12 dict begin
+begincmap
+/CIDSystemInfo<<
+/Registry (Adobe)
+/Ordering (UCS)
+/Supplement 0
+>> def
+/CMapName/Adobe-Identity-UCS def
+/CMapType 2 def
+1 begincodespacerange
+<00> <FF>
+endcodespacerange
+1 beginbfchar
+<01> <2264>
+endbfchar
+endcmap
+CMapName currentdict /CMap defineresource pop
+end
+end
+
+
+=== ToUnicode for object 940 ===
+/CIDInit/ProcSet findresource begin
+12 dict begin
+begincmap
+/CIDSystemInfo<<
+/Registry (Adobe)
+/Ordering (UCS)
+/Supplement 0
+>> def
+/CMapName/Adobe-Identity-UCS def
+/CMapType 2 def
+1 begincodespacerange
+<00> <FF>
+endcodespacerange
+25 beginbfchar
+<01> <0050>
+<02> <006C>
+<03> <0061>
+<04> <0074>
+<05> <0065>
+<06> <0066>
+<07> <006F>
+<08> <0072>
+<09> <006D>
+<0A> <0020>
+<0B> <0053>
+<0C> <0064>
+<0D> <0063>
+<0E> <002C>
+<0F> <0073>
+<10> <0076>
+<11> <0069>
+<12> <006E>
+<13> <0067>
+<14> <007C>
+<15> <0052>
+<16> <00E9>
+<17> <0054>
+<18> <0068>
+<19> <00E8>
+endbfchar
+endcmap
+CMapName currentdict /CMap defineresource pop
+end
+end
+
+
+=== ToUnicode for object 945 ===
+/CIDInit/ProcSet findresource begin
+12 dict begin
+begincmap
+/CIDSystemInfo<<
+/Registry (Adobe)
+/Ordering (UCS)
+/Supplement 0
+>> def
+/CMapName/Adobe-Identity-UCS def
+/CMapType 2 def
+1 begincodespacerange
+<00> <FF>
+endcodespacerange
+80 beginbfchar
+<01> <004A>
+<02> <00EB>
+<03> <006E>
+<04> <0064>
+<05> <0043>
+<06> <0069>
+<07> <0054>
+<08> <0068>
+<09> <00E8>
+<0A> <0073>
+<0B> <0020>
+<0C> <2014>
+<0D> <0061>
+<0E> <0065>
+<0F> <0072>
+<10> <0063>
+<11> <0067>
+<12> <0053>
+<13> <006F>
+<14> <006D>
+<15> <0031>
+<16> <002E>
+<17> <0079>
+<18> <0074>
+<19> <0075>
+<1A> <0070>
+<1B> <006A>
+<1C> <0076>
+<1D> <0044>
+<1E> <00740069>
+<1F> <0032>
+<20> <0050>
+<21> <006C>
+<22> <0033>
+<23> <0052>
+<24> <0078>
+<25> <0034>
+<26> <00E9>
+<27> <00740074>
+<28> <004E>
+<29> <0066>
+<2A> <0041>
+<2B> <0071>
+<2C> <004F>
+<2D> <0062>
+<2E> <002C>
+<2F> <004D>
+<30> <0056>
+<31> <0028>
+<32> <0029>
+<33> <0046>
+<34> <00E0>
+<35> <0045>
+<36> <00AB>
+<37> <00BB>
+<38> <2019>
+<39> <0035>
+<3A> <00F4>
+<3B> <0049>
+<3C> <00660069>
+<3D> <0036>
+<3E> <00E7>
+<3F> <002F>
+<40> <002D>
+<41> <0037>
+<42> <0042>
+<43> <0038>
+<44> <0039>
+<45> <0030>
+<46> <2013>
+<47> <0077>
+<48> <004C>
+<49> <0047>
+<4A> <00C9>
+<4B> <006B>
+<4C> <0057>
+<4D> <0055>
+<4E> <0058>
+<4F> <006600660069>
+<50> <00EE>
+endbfchar
+endcmap
+CMapName currentdict /CMap defineresource pop
+end
+end
+
+
+=== ToUnicode for object 950 ===
+/CIDInit/ProcSet findresource begin
+12 dict begin
+begincmap
+/CIDSystemInfo<<
+/Registry (Adobe)
+/Ordering (UCS)
+/Supplement 0
+>> def
+/CMapName/Adobe-Identity-UCS def
+/CMapType 2 def
+1 begincodespacerange
+<00> <FF>
+endcodespacerange
+1 beginbfchar
+<01> <2610>
+endbfchar
+endcmap
+CMapName currentdict /CMap defineresource pop
+end
+end
+
+
+=== ToUnicode for object 955 ===
+/CIDInit/ProcSet findresource begin
+12 dict begin
+begincmap
+/CIDSystemInfo<<
+/Registry (Adobe)
+/Ordering (UCS)
+/Supplement 0
+>> def
+/CMapName/Adobe-Identity-UCS def
+/CMapType 2 def
+1 begincodespacerange
+<00> <FF>
+endcodespacerange
+85 beginbfchar
+<01> <0053>
+<02> <0045>
+<03> <004E>
+<04> <002D>
+<05> <0043>
+<06> <0041>
+<07> <0052>
+<08> <0054>
+<09> <0020>
+<0A> <007C>
+<0B> <0048>
+<0C> <0049>
+<0D> <0044>
+<0E> <0047>
+<0F> <0056>
+<10> <0065>
+<11> <0072>
+<12> <0073>
+<13> <0069>
+<14> <006F>
+<15> <006E>
+<16> <0031>
+<17> <002E>
+<18> <0030>
+<19> <2014>
+<1A> <0063>
+<1B> <0075>
+<1C> <006D>
+<1D> <0074>
+<1E> <0064>
+<1F> <00E9>
+<20> <0066>
+<21> <0070>
+<22> <0076>
+<23> <006C>
+<24> <0061>
+<25> <0071>
+<26> <0068>
+<27> <003A>
+<28> <004A>
+<29> <00EB>
+<2A> <00E8>
+<2B> <0062>
+<2C> <0079>
+<2D> <004F>
+<2E> <006A>
+<2F> <0042>
+<30> <004C>
+<31> <0050>
+<32> <0032>
+<33> <004D>
+<34> <002C>
+<35> <2019>
+<36> <0067>
+<37> <0055>
+<38> <00E7>
+<39> <0046>
+<3A> <002F>
+<3B> <0035>
+<3C> <00660069>
+<3D> <00E0>
+<3E> <0078>
+<3F> <00EA>
+<40> <006B>
+<41> <0026>
+<42> <00AB>
+<43> <00BB>
+<44> <00C9>
+<45> <00F4>
+<46> <0028>
+<47> <0029>
+<48> <0033>
+<49> <0034>
+<4A> <0036>
+<4B> <0037>
+<4C> <0038>
+<4D> <0039>
+<4E> <0057>
+<4F> <002B>
+<50> <007A>
+<51> <005F>
+<52> <0077>
+<53> <0066006C>
+<54> <00D4>
+<55> <0058>
+endbfchar
+endcmap
+CMapName currentdict /CMap defineresource pop
+end
+end
+
+
+=== ToUnicode for object 960 ===
+/CIDInit/ProcSet findresource begin
+12 dict begin
+begincmap
+/CIDSystemInfo<<
+/Registry (Adobe)
+/Ordering (UCS)
+/Supplement 0
+>> def
+/CMapName/Adobe-Identity-UCS def
+/CMapType 2 def
+1 begincodespacerange
+<00> <FF>
+endcodespacerange
+100 beginbfchar
+<01> <004A>
+<02> <00EB>
+<03> <006E>
+<04> <0064>
+<05> <0043>
+<06> <0069>
+<07> <0054>
+<08> <0068>
+<09> <00E8>
+<0A> <0073>
+<0B> <0020>
+<0C> <0062>
+<0D> <0079>
+<0E> <0053>
+<0F> <0065>
+<10> <002D>
+<11> <0045>
+<12> <0061>
+<13> <0072>
+<14> <0074>
+<15> <2022>
+<16> <0056>
+<17> <006F>
+<18> <0031>
+<19> <002E>
+<1A> <0030>
+<1B> <007C>
+<1C> <0050>
+<1D> <0067>
+<1E> <0038>
+<1F> <0063>
+<20> <0032>
+<21> <0036>
+<22> <004C>
+<23> <0070>
+<24> <006D>
+<25> <006C>
+<26> <00E9>
+<27> <00E0>
+<28> <0076>
+<29> <0075>
+<2A> <0078>
+<2B> <00660069>
+<2C> <006600660069>
+<2D> <002C>
+<2E> <0066>
+<2F> <0071>
+<30> <2019>
+<31> <00EA>
+<32> <006A>
+<33> <004E>
+<34> <004F>
+<35> <004D>
+<36> <0041>
+<37> <0049>
+<38> <00E7>
+<39> <2013>
+<3A> <0077>
+<3B> <0052>
+<3C> <0028>
+<3D> <0029>
+<3E> <006B>
+<3F> <00AB>
+<40> <00BB>
+<41> <00EE>
+<42> <0033>
+<43> <0047>
+<44> <003A>
+<45> <003B>
+<46> <00660066>
+<47> <00F9>
+<48> <0044>
+<49> <00E2>
+<4A> <0034>
+<4B> <2014>
+<4C> <007A>
+<4D> <002F>
+<4E> <0055>
+<4F> <0046>
+<50> <0035>
+<51> <0057>
+<52> <00F4>
+<53> <0042>
+<54> <0025>
+<55> <0058>
+<56> <0037>
+<57> <00C9>
+<58> <005F>
+<59> <0039>
+<5A> <0048>
+<5B> <004B>
+<5C> <00FB>
+<5D> <0051>
+<5E> <003F>
+<5F> <2026>
+<60> <0066006C>
+<61> <0059>
+<62> <003E>
+<63> <005A>
+<64> <003D>
+endbfchar
+7 beginbfchar
+<65> <0153>
+<66> <00C0>
+<67> <00B0>
+<68> <002A>
+<69> <007B>
+<6A> <007D>
+<6B> <002B>
+endbfchar
+endcmap
+CMapName currentdict /CMap defineresource pop
+end
+end
+
+

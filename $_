@@ -1,0 +1,58 @@
+Au caractÃ¨re Ligne:1 : 185
++ ... ent]::NewLine; Write-Host ('Taille totale: {0} caracteres' -f 
+.Length ...
++                                                                  ~
+Vous devez indiquer une expression de valeur aprÃ¨s l'opÃ©rateur Â«Â -fÂ Â».
+Au caractÃ¨re Ligne:1 : 186
++ ... wLine; Write-Host ('Taille totale: {0} caracteres' -f .Length); 
+Write ...
++                                                           ~~~~~~~
+Jeton inattendu Â«Â .LengthÂ Â» dans l'expression ou l'instruction.
+Au caractÃ¨re Ligne:1 : 185
++ ... ent]::NewLine; Write-Host ('Taille totale: {0} caracteres' -f 
+.Length ...
++                                                                  ~
+ParenthÃ¨se fermante Â«Â )Â Â» manquante dans l'expression.
+Au caractÃ¨re Ligne:1 : 193
++ ... Line; Write-Host ('Taille totale: {0} caracteres' -f .Length); 
+Write- ...
++                                                                 ~
+Jeton inattendu Â«Â )Â Â» dans l'expression ou l'instruction.
+Au caractÃ¨re Ligne:1 : 239
++ ... es' -f .Length); Write-Host '--- 30 premiÃ¨res lignes ---';  | 
+Select- ...
++                                                                 ~
+Un Ã©lÃ©ment de canal vide n'est pas autorisÃ©.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsError 
+   RecordException
+    + FullyQualifiedErrorId : ExpectedValueExpression
+ 
+Au caractŠre Ligne:1 : 185
++ ... ent]::NewLine; Write-Host ('Taille totale: {0} caracteres' -f 
+.Length ...
++                                                                  ~
+Vous devez indiquer une expression de valeur aprŠs l'op‚rateur ®ÿ-fÿ¯.
+Au caractŠre Ligne:1 : 186
++ ... wLine; Write-Host ('Taille totale: {0} caracteres' -f .Length); 
+Write ...
++                                                           ~~~~~~~
+Jeton inattendu ®ÿ.Lengthÿ¯ dans l'expression ou l'instruction.
+Au caractŠre Ligne:1 : 185
++ ... ent]::NewLine; Write-Host ('Taille totale: {0} caracteres' -f 
+.Length ...
++                                                                  ~
+ParenthŠse fermante ®ÿ)ÿ¯ manquante dans l'expression.
+Au caractŠre Ligne:1 : 193
++ ... Line; Write-Host ('Taille totale: {0} caracteres' -f .Length); 
+Write- ...
++                                                                 ~
+Jeton inattendu ®ÿ)ÿ¯ dans l'expression ou l'instruction.
+Au caractŠre Ligne:1 : 239
++ ... es' -f .Length); Write-Host '--- 30 premiŠres lignes ---';  | 
+Select- ...
++                                                                 ~
+Un ‚l‚ment de canal vide n'est pas autoris‚.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsError 
+   RecordException
+    + FullyQualifiedErrorId : ExpectedValueExpression
+ 
