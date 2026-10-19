@@ -2,63 +2,91 @@ import { PrismaClient, UserRole, ShopStatus, ShopType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+async function upsertCategory(data: any) {
+  const existing = await prisma.category.findFirst({ where: { slug: data.slug } });
+  if (existing) {
+    return prisma.category.update({ where: { id: existing.id }, data });
+  }
+  return prisma.category.create({ data });
+}
+
+async function upsertProduct(data: any) {
+  const existing = await prisma.product.findFirst({ where: { slug: data.slug } });
+  if (existing) {
+    return prisma.product.update({ where: { id: existing.id }, data });
+  }
+  return prisma.product.create({ data });
+}
+
+async function upsertUser(data: any) {
+  const existing = await prisma.user.findUnique({ where: { phone: data.phone } });
+  if (existing) {
+    return prisma.user.update({ where: { id: existing.id }, data });
+  }
+  return prisma.user.create({ data });
+}
+
+async function upsertOrganization(data: any) {
+  const existing = await prisma.organization.findUnique({ where: { slug: data.slug } });
+  if (existing) {
+    return prisma.organization.update({ where: { id: existing.id }, data });
+  }
+  return prisma.organization.create({ data });
+}
+
+async function upsertShop(data: any) {
+  const existing = await prisma.shop.findUnique({ where: { slug: data.slug } });
+  if (existing) {
+    return prisma.shop.update({ where: { id: existing.id }, data });
+  }
+  return prisma.shop.create({ data });
+}
+
 async function main() {
   console.log('🌱 Début du seed...');
 
   // 1. Créer un super admin
-  const superAdmin = await prisma.user.upsert({
-    where: { phone: '+221700000000' },
-    update: {},
-    create: {
-      phone: '+221700000000',
-      email: 'admin@jendcithes.sn',
-      role: UserRole.SUPER_ADMIN,
-      status: 'ACTIVE',
-      phoneVerified: true,
-      emailVerified: true,
-    },
+  const superAdmin = await upsertUser({
+    phone: '+221700000000',
+    email: 'admin@jendcithes.sn',
+    role: UserRole.SUPER_ADMIN,
+    status: 'ACTIVE',
+    phoneVerified: true,
+    emailVerified: true,
   });
   console.log(`✓ Super admin créé: ${superAdmin.phone}`);
 
   // 2. Créer une organisation par défaut
-  const organization = await prisma.organization.upsert({
-    where: { slug: 'jendcithes-senecarte' },
-    update: {},
-    create: {
-      ownerId: superAdmin.id,
-      name: 'JëndCiThiès by Sen-E-Carte',
-      legalName: 'Sen-E-Carte SARL',
-      slug: 'jendcithes-senecarte',
-      contactPhone: '+221700000000',
-      contactEmail: 'contact@jendcithes.sn',
-      address: 'Thiès, Sénégal',
-      status: 'active',
-      verificationStatus: 'verified',
-    },
+  const organization = await upsertOrganization({
+    slug: 'jendcithes-senecarte',
+    ownerId: superAdmin.id,
+    name: 'JëndCiThiès by Sen-E-Carte',
+    legalName: 'Sen-E-Carte SARL',
+    contactPhone: '+221700000000',
+    contactEmail: 'contact@jendcithes.sn',
+    address: 'Thiès, Sénégal',
+    status: 'active',
+    verificationStatus: 'verified',
   });
   console.log(`✓ Organisation créée: ${organization.name}`);
 
   // 3. Créer une boutique de démo
-  const shop = await prisma.shop.upsert({
-    where: { slug: 'mboro-marche' },
-    update: {},
-    create: {
-      organizationId: organization.id,
-      ownerId: superAdmin.id,
-      name: 'Mboro Marché',
-      slug: 'mboro-marche',
-      type: ShopType.RETAIL,
-      description: 'Produits frais et locaux de Mboro',
-      shortDescription: 'Épicerie fine et produits du terroir',
-      phone: '+221771234567',
-      email: 'contact@mboro-marche.sn',
-      whatsapp: '+221771234567',
-      publicAddress: 'Marché de Mboro, Thiès, Sénégal',
-      status: ShopStatus.ACTIVE,
-      verificationStatus: 'verified',
-      seoTitle: 'Mboro Marché - Produits locaux Thiès',
-      seoDescription: 'Découvrez les produits frais et locaux de Mboro',
-    },
+  const shop = await upsertShop({
+    slug: 'mboro-marche',
+    organizationId: organization.id,
+    ownerId: superAdmin.id,
+    name: 'Mboro Marché',
+    type: ShopType.RETAIL,
+    description: 'Produits frais et locaux de Mboro',
+    shortDescription: 'Épicerie fine et produits du terroir',
+    phone: '+221771234567',
+    email: 'contact@mboro-marche.sn',
+    whatsapp: '+221771234567',
+    publicAddress: 'Marché de Mboro, Thiès, Sénégal',
+    status: ShopStatus.ACTIVE,
+    verificationStatus: 'verified',
+    seoTitle: 'Mboro Marché - Produits locaux Thiès',
+    seoDescription: 'Découvrez les produits frais et locaux de Mboro',
   });
   console.log(`✓ Boutique créée: ${shop.name}`);
 
@@ -71,23 +99,19 @@ async function main() {
   ];
 
   for (const cat of categories) {
-    await prisma.category.upsert({
-      where: { slug: cat.slug },
-      update: {},
-      create: {
-        ...cat,
-        shopId: shop.id,
-        isPublic: true,
-        isActive: true,
-        sortOrder: categories.indexOf(cat),
-      },
+    await upsertCategory({
+      ...cat,
+      shopId: shop.id,
+      isPublic: true,
+      isActive: true,
+      sortOrder: categories.indexOf(cat),
     });
   }
   console.log(`✓ ${categories.length} catégories créées`);
 
   // 5. Créer des produits de démo
-  const fruitsCategory = await prisma.category.findUnique({ where: { slug: 'fruits-legumes' } });
-  const epicerieCategory = await prisma.category.findUnique({ where: { slug: 'epicerie' } });
+  const fruitsCategory = await prisma.category.findFirst({ where: { slug: 'fruits-legumes' } });
+  const epicerieCategory = await prisma.category.findFirst({ where: { slug: 'epicerie' } });
 
   const products = [
     {
@@ -126,32 +150,42 @@ async function main() {
   ];
 
   for (const prod of products) {
-    await prisma.product.upsert({
-      where: { slug: prod.slug },
-      update: {},
-      create: {
-        ...prod,
-        shopId: shop.id,
-      },
+    await upsertProduct({
+      ...prod,
+      shopId: shop.id,
     });
   }
   console.log(`✓ ${products.length} produits créés`);
 
   // 6. Créer un abonnement pour la boutique
-  await prisma.subscription.upsert({
-    where: { shopId: shop.id },
-    update: {},
-    create: {
-      shopId: shop.id,
-      status: 'ACTIVE',
-      planName: 'basic',
-      price: 2500,
-      currency: 'XOF',
-      billingPeriod: 'monthly',
-      startedAt: new Date(),
-      nextDueAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    },
-  });
+  const existingSub = await prisma.subscription.findFirst({ where: { shopId: shop.id } });
+  if (existingSub) {
+    await prisma.subscription.update({
+      where: { id: existingSub.id },
+      data: {
+        status: 'ACTIVE',
+        planName: 'basic',
+        price: 2500,
+        currency: 'XOF',
+        billingPeriod: 'monthly',
+        startedAt: new Date(),
+        nextDueAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+  } else {
+    await prisma.subscription.create({
+      data: {
+        shopId: shop.id,
+        status: 'ACTIVE',
+        planName: 'basic',
+        price: 2500,
+        currency: 'XOF',
+        billingPeriod: 'monthly',
+        startedAt: new Date(),
+        nextDueAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+  }
   console.log(`✓ Abonnement créé pour la boutique`);
 
   console.log('✅ Seed terminé avec succès!');
