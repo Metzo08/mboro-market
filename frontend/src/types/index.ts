@@ -72,6 +72,7 @@ export interface Order {
   deliveryFee: number;
   total: number;
   currency: string;
+  paymentMethod?: string;
   createdAt: string;
 }
 
