@@ -41,9 +41,8 @@ export interface Product {
   slug: string;
   shortDescription?: string;
   description?: string;
-  price: number;
-  promotionalPrice?: number;
-  sku?: string;
+  price: number | string;
+  promotionalPrice?: number | string;
   stock: number;
   status: string;
   availability: string;
@@ -66,11 +65,11 @@ export interface Order {
   shopId: string;
   status: string;
   paymentStatus: string;
-  subtotal: number;
-  discount: number;
-  tax: number;
-  deliveryFee: number;
-  total: number;
+  subtotal: number | string;
+  discount: number | string;
+  tax: number | string;
+  deliveryFee: number | string;
+  total: number | string;
   currency: string;
   paymentMethod?: string;
   createdAt: string;
