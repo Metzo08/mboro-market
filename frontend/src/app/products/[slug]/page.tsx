@@ -1,20 +1,15 @@
 import { notFound } from 'next/navigation';
-import { api } from '@/lib/api';
-import { formatPrice, formatDate } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils';
 import { Product } from '@/types';
+import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
-export const dynamic = 'force-dynamic';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-interface ProductDetailPageProps {
-  params: { slug: string };
-}
-
-export async function getProduct(slug: string): Promise<Product | null> {
+async function getProduct(slug: string): Promise<Product | null> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/products?slug=${slug}`,
-      { next: { revalidate: 60 } },
-    );
+    const res = await fetch(`${API_URL}/products?slug=${slug}`, {
+      next: { revalidate: 60 },
+    });
     if (!res.ok) return null;
     const data = await res.json();
     const items = data.items || [];
@@ -25,10 +20,19 @@ export async function getProduct(slug: string): Promise<Product | null> {
 }
 
 export async function generateStaticParams() {
-  return [];
+  try {
+    const res = await fetch(`${API_URL}/products?limit=100`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.items || []).map((p: Product) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
 }
 
-export const metadata = async ({ params }: ProductDetailPageProps): Promise<{ title: string; description?: string }> => {
+export const metadata = async ({ params }: { params: { slug: string } }): Promise<{ title: string; description?: string }> => {
   const product = await getProduct(params.slug);
   if (!product) return { title: 'Produit introuvable' };
   return {
@@ -37,7 +41,7 @@ export const metadata = async ({ params }: ProductDetailPageProps): Promise<{ ti
   };
 };
 
-export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
+export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
   const product: Product | null = await getProduct(params.slug);
 
   if (!product) {
@@ -64,15 +68,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.title}</h1>
           <p className="text-gray-600 mb-6">{product.description || product.shortDescription}</p>
           <div className="mb-6">
-            <span className="text-2xl font-bold text-green-600">{formatPrice(product.price)}</span>
+            <span className="text-2xl font-bold text-green-600">{formatPrice(Number(product.price))}</span>
             {product.promotionalPrice && (
-              <span className="text-lg text-gray-500 line-through ml-2">{formatPrice(product.promotionalPrice)}</span>
+              <span className="text-lg text-gray-500 line-through ml-2">{formatPrice(Number(product.promotionalPrice))}</span>
             )}
           </div>
           <div className="flex gap-4">
-            <button className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center gap-2">
-              <span>Ajouter au panier</span>
-            </button>
+            <AddToCartButton product={product} />
             <button className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50">
               Acheter maintenant
             </button>

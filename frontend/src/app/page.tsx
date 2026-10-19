@@ -1,11 +1,13 @@
 import Link from 'next/link';
-import { api } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 import { Product } from '@/types';
+import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
-export async function getProducts(): Promise<Product[]> {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
+async function getProducts(): Promise<Product[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/products`, {
+    const res = await fetch(`${API_URL}/products?limit=8`, {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
@@ -16,8 +18,8 @@ export async function getProducts(): Promise<Product[]> {
   }
 }
 
-export default function HomePage() {
-  const products: Product[] = [];
+export default async function HomePage() {
+  const products: Product[] = await getProducts();
 
   return (
     <div className="space-y-12">
@@ -52,18 +54,19 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {products.length > 0 ? (
               products.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                   <div className="h-48 bg-gray-100 flex items-center justify-center">
                     <span className="text-gray-400 text-sm">{product.shortDescription || 'Image produit'}</span>
                   </div>
-                  <div className="p-4">
-                    <Link href={`/products/${product.slug}`} className="block">
+                  <div className="p-4 flex flex-col flex-grow">
+                    <Link href={`/products/${product.slug}`} className="block mb-2">
                       <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">{product.title}</h3>
-                      <p className="text-green-600 font-bold">{formatPrice(product.price)}</p>
+                      <p className="text-green-600 font-bold">{formatPrice(Number(product.price))}</p>
                       {product.promotionalPrice && (
-                        <p className="text-sm text-gray-500 line-through">{formatPrice(product.promotionalPrice)}</p>
+                        <p className="text-sm text-gray-500 line-through">{formatPrice(Number(product.promotionalPrice))}</p>
                       )}
                     </Link>
+                    <AddToCartButton product={product} />
                   </div>
                 </div>
               ))

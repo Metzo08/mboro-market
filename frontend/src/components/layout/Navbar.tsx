@@ -3,12 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ShoppingCart, User, MapPin, Phone, LayoutDashboard } from 'lucide-react';
+import { Menu, ShoppingCart, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useCart } from '@/components/cart/CartProvider';
 
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
+  const { itemCount } = useCart();
 
   return (
     <nav className="fixed w-full z-50 bg-white border-b">
@@ -41,6 +43,16 @@ export function Navbar() {
               )}
             >
               Boutiques
+            </Link>
+            <Link
+              href="/cart"
+              className={cn(
+                'text-sm font-medium transition-colors',
+                pathname === '/cart' ? 'text-green-600' : 'text-gray-600 hover:text-gray-900',
+                itemCount > 0 ? 'bg-green-50 px-3 py-2 rounded-lg' : '',
+              )}
+            >
+              Panier <span className="ml-1 text-xs font-bold {itemCount > 0 ? 'text-green-600' : 'text-gray-400'}">{itemCount}</span>
             </Link>
             <Link
               href="/login"
@@ -80,6 +92,16 @@ export function Navbar() {
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
             >
               Boutiques
+            </Link>
+            <Link
+              href="/cart"
+              onClick={() => setIsOpen(false)}
+              className={cn(
+                'block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50',
+                itemCount > 0 ? 'bg-green-50' : '',
+              )}
+            >
+              Panier {itemCount > 0 && <span className="ml-2 text-xs font-bold text-green-600">{itemCount}</span>}
             </Link>
             <Link
               href="/login"

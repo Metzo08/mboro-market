@@ -1,17 +1,14 @@
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { formatPrice } from '@/lib/utils';
 import { Shop } from '@/types';
 
-interface ShopsPageProps {
-  searchParams?: { page?: string; limit?: string };
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-export async function getShops(): Promise<Shop[]> {
+async function getShops(): Promise<Shop[]> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'}/shops`,
-      { next: { revalidate: 60 } },
-    );
+    const res = await fetch(`${API_URL}/shops`, {
+      next: { revalidate: 60 },
+    });
     if (!res.ok) return [];
     const data = await res.json();
     return data.items || data || [];
@@ -20,9 +17,8 @@ export async function getShops(): Promise<Shop[]> {
   }
 }
 
-export default function ShopsPage({ searchParams }: ShopsPageProps) {
-  const shopsPromise = getShops();
-  const shops: Shop[] = shopsPromise as any;
+export default async function ShopsPage() {
+  const shops: Shop[] = await getShops();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -34,7 +30,7 @@ export default function ShopsPage({ searchParams }: ShopsPageProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {shops.length > 0 ? (
           shops.map((shop) => (
-            <div key={shop.id} className="bg-white rounded-lg border border-gray-200 overflow-hover:shadow-lg transition-shadow group">
+            <div key={shop.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
               <div className="h-48 bg-gray-100 flex items-center justify-center">
                 <span className="text-gray-400 text-sm">{shop.name}</span>
               </div>
