@@ -60,6 +60,28 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.title,
+            description: product.description || product.shortDescription,
+            image: product.image || 'http://localhost:3001/favicon.ico',
+            offers: {
+              '@type': 'Offer',
+              price: Number(product.price),
+              priceCurrency: 'XOF',
+              availability: product.availability === 'in_stock' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+              seller: {
+                '@type': 'Organization',
+                name: 'Mboro Market',
+              },
+            },
+          }),
+        }}
+      />
       <div className="grid lg:grid-cols-2 gap-8">
         <div className="h-80 bg-gray-200 rounded-lg flex items-center justify-center">
           <span className="text-gray-400 text-lg">{product.shortDescription || 'Image du produit'}</span>

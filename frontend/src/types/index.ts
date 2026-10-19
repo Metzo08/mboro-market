@@ -51,6 +51,7 @@ export interface Product {
   seoTitle?: string;
   seoDescription?: string;
   customFields?: Record<string, any>;
+  image?: string;
   leadTime?: string;
   createdAt: string;
   updatedAt: string;

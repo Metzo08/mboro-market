@@ -31,6 +31,25 @@ export default async function ShopsPage() {
         {shops.length > 0 ? (
           shops.map((shop) => (
             <div key={shop.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify({
+                    '@context': 'https://schema.org',
+                    '@type': 'Store',
+                    name: shop.name,
+                    description: shop.shortDescription || '',
+                    url: `http://localhost:3001/shops/${shop.slug}`,
+                    address: {
+                      '@type': 'PostalAddress',
+                      addressLocality: 'Mboro',
+                      addressRegion: 'Thiès',
+                      addressCountry: 'SN',
+                    },
+                    telephone: shop.phone || '',
+                  }),
+                }}
+              />
               <div className="h-48 bg-gray-100 flex items-center justify-center">
                 <span className="text-gray-400 text-sm">{shop.name}</span>
               </div>

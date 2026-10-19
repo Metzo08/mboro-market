@@ -5,6 +5,23 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Mboro Market',
+  url: 'http://localhost:3001',
+  logo: 'http://localhost:3001/favicon.ico',
+  description: 'Place de marché locale pour les commerçants de Mboro et Thiès, Sénégal',
+  telephone: '+221771234567',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Marché de Mboro',
+    addressLocality: 'Mboro',
+    addressRegion: 'Thiès',
+    addressCountry: 'SN',
+  },
+};
+
 async function getProducts(): Promise<Product[]> {
   try {
     const res = await fetch(`${API_URL}/products?limit=8`, {
@@ -23,6 +40,10 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
       <section className="py-12 bg-green-50 rounded-xl border border-green-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
