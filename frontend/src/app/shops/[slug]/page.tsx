@@ -14,7 +14,13 @@ import {
 } from 'lucide-react';
 import type { Shop } from '@/types';
 import { fetchJson } from '@/lib/server';
-import { formatOpeningHours, paymentLabels, shopInitial, shopTypeLabel } from '@/lib/shop';
+import {
+  formatOpeningHours,
+  paymentLabels,
+  shopInitial,
+  shopTypeLabel,
+  structuredOpeningHours,
+} from '@/lib/shop';
 import { Badge } from '@/components/ui/Badge';
 import { OpenStatus } from '@/components/shop/OpenStatus';
 import { ProductCard } from '@/components/product/ProductCard';
@@ -60,6 +66,7 @@ export default async function ShopPage({ params }: PageProps) {
   const zones = (await fetchJson<DeliveryZone[]>(`/delivery/zones/shop/${shop.id}`)) ?? [];
   const products = shop.products ?? [];
   const hours = formatOpeningHours(shop.openingHours);
+  const structuredHours = structuredOpeningHours(shop.openingHours);
   const payments = paymentLabels(shop.settings);
   const whatsapp = shop.whatsapp?.replace(/[^0-9]/g, '');
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
@@ -77,15 +84,14 @@ export default async function ShopPage({ params }: PageProps) {
       addressLocality: 'Thiès',
       addressCountry: 'SN',
     },
-    ...(hours.length
+    ...(structuredHours.length
       ? {
-          openingHoursSpecification: hours
-            .filter((entry) => entry.text !== 'Fermé')
-            .map((entry) => ({
-              '@type': 'OpeningHoursSpecification',
-              dayOfWeek: entry.day,
-              description: entry.text,
-            })),
+          openingHoursSpecification: structuredHours.map((entry) => ({
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: entry.dayOfWeek,
+            opens: entry.opens,
+            closes: entry.closes,
+          })),
         }
       : {}),
   };

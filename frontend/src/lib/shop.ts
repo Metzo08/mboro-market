@@ -109,6 +109,30 @@ export function shopLocality(shop: Pick<Shop, 'publicAddress'>): string {
   return parts.length > 1 ? parts[parts.length - 2] ?? parts[0] : parts[0];
 }
 
+const SCHEMA_DAYS: Record<string, string> = {
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+  sunday: 'Sunday',
+};
+
+/** Horaires structurés pour Schema.org (opens/closes), jamais inventés. */
+export function structuredOpeningHours(
+  hours?: OpeningHours | null,
+): Array<{ dayOfWeek: string; opens: string; closes: string }> {
+  if (!hours) return [];
+  return Object.entries(SCHEMA_DAYS).flatMap(([key, schemaDay]) =>
+    rangesForDay(hours, key).map((range) => ({
+      dayOfWeek: `https://schema.org/${schemaDay}`,
+      opens: range.open,
+      closes: range.close,
+    })),
+  );
+}
+
 export function formatOpeningHours(hours?: OpeningHours | null): Array<{ day: string; text: string }> {
   if (!hours) return [];
   const order = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];

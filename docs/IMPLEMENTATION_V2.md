@@ -48,6 +48,7 @@ Ce document trace ce qui a été **réellement implémenté**, ce qui reste **pa
 - **Recherche tolérante aux fautes/accents** : recherche insensible à la casse uniquement ; l'extension PostgreSQL `unaccent` ou Meilisearch reste à ajouter.
 - **SEO local par territoire** : pas encore de pages « catégorie + ville » avec seuil d'offres réelles.
 - **CDP / CGU / CGV** : pages de bonne foi, textes à valider juridiquement.
+- **Lint** : `npm run lint` remonte des règles React 19 (`set-state-in-effect`) et `no-explicit-any` à nettoyer ; le build TypeScript et le build Next passent.
 
 ## 4. Suggestions prioritaires
 
