@@ -13,7 +13,7 @@ import { CategoriesService } from './categories.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/index';
-import { Public } from '../../common/decorators/index';
+import { Public, CurrentUser } from '../../common/decorators/index';
 import { CreateCategoryDto, UpdateCategoryDto, CreateCategoryFieldDto } from './dto';
 
 @Controller('categories')
@@ -23,8 +23,8 @@ export class CategoriesController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('super_admin', 'admin', 'merchant')
-  create(@Body() dto: CreateCategoryDto) {
-    return this.service.create(dto);
+  create(@Body() dto: CreateCategoryDto, @CurrentUser() user: any) {
+    return this.service.create(dto, user);
   }
 
   @Public()
@@ -42,8 +42,8 @@ export class CategoriesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('super_admin', 'admin', 'merchant')
-  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
-    return this.service.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto, @CurrentUser() user: any) {
+    return this.service.update(id, dto, user);
   }
 
   @Delete(':id')
@@ -56,7 +56,7 @@ export class CategoriesController {
   @Post(':id/fields')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('super_admin', 'admin', 'merchant')
-  addField(@Param('id') id: string, @Body() dto: CreateCategoryFieldDto) {
-    return this.service.addField(id, dto);
+  addField(@Param('id') id: string, @Body() dto: CreateCategoryFieldDto, @CurrentUser() user: any) {
+    return this.service.addField(id, dto, user);
   }
 }

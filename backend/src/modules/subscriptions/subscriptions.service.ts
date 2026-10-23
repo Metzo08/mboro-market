@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -20,7 +20,17 @@ export class SubscriptionsService {
     });
   }
 
-  async findByShop(shopId: string) {
+  async findByShop(shopId: string, user: { id: string; role: string }) {
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      const shop = await this.prisma.shop.findUnique({
+        where: { id: shopId },
+        select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },
+      });
+      if (!shop) throw new NotFoundException('Boutique introuvable');
+      if (shop.ownerId !== user.id && shop.members.length === 0) {
+        throw new ForbiddenException('Accès refusé à cette boutique');
+      }
+    }
     return this.prisma.subscription.findMany({ where: { shopId } });
   }
 

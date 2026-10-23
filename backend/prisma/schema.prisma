@@ -557,6 +557,10 @@ model Order {
   estimatedDelivery DateTime?
   quoteId       String?
   deliveredAt   DateTime?
+  /** confirmed | to_confirm — jamais de frais de livraison inventés (§10.4) */
+  deliveryFeeStatus String @default("confirmed")
+  /** Anti double-commande : clé fournie par le client, unique en base (§8.8) */
+  idempotencyKey String? @unique
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

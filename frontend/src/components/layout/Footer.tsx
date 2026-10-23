@@ -1,32 +1,51 @@
+import Link from 'next/link';
+import { Logo } from '@/components/ui/Logo';
+
 export function Footer() {
   return (
-    <footer className="border-t bg-gray-50">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-sm text-gray-600">
-            Mboro Market - Place de marché locale à Thiès, Sénégal
-          </div>
-          <div className="flex gap-6">
-            <a href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              À propos
-            </a>
-            <a href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              Conditions d'utilisation
-            </a>
-            <a href="#" className="text-sm text-gray-600 hover:text-gray-900">
-              Confidentialité
-            </a>
-          </div>
-          <div className="flex gap-4 text-sm">
-            <a href="#" className="text-gray-600 hover:text-gray-900">
-              <span className="sr-only">Facebook</span>
-            </a>
-            <a href="#" className="text-gray-600 hover:text-gray-900">
-              <span className="sr-only">WhatsApp</span>
-            </a>
-          </div>
+    <footer className="mt-16 border-t border-line bg-sand/60 pb-24 md:pb-0">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3 lg:px-8">
+        <div>
+          <Logo />
+          <p className="mt-3 max-w-xs text-small text-muted">
+            Les commerces et services de Thiès, à portée de main. Une plateforme Sen-E-Carte.
+          </p>
+        </div>
+
+        <nav aria-label="Liens utiles" className="grid grid-cols-2 gap-2 text-small">
+          <Link href="/shops" className="text-muted hover:text-terracotta-dark">
+            Boutiques
+          </Link>
+          <Link href="/products" className="text-muted hover:text-terracotta-dark">
+            Produits
+          </Link>
+          <Link href="/register" className="text-muted hover:text-terracotta-dark">
+            Devenir commerçant
+          </Link>
+          <Link href="/orders" className="text-muted hover:text-terracotta-dark">
+            Mes commandes
+          </Link>
+          <Link href="/legal/cgu" className="text-muted hover:text-terracotta-dark">
+            Conditions d’utilisation
+          </Link>
+          <Link href="/legal/confidentialite" className="text-muted hover:text-terracotta-dark">
+            Confidentialité
+          </Link>
+        </nav>
+
+        <div className="text-small text-muted">
+          <p className="font-medium text-ink">Support Sen-E-Carte</p>
+          <p className="mt-1">Thiès, Sénégal</p>
+          <a href="tel:+221700000000" className="mt-2 block text-teal hover:text-terracotta-dark">
+            +221 70 000 00 00
+          </a>
+          <p className="mt-4 text-caption">
+            Les mentions légales, CGU et CGV doivent être validées juridiquement avant mise en
+            production.
+          </p>
         </div>
       </div>
     </footer>
   );
 }
+

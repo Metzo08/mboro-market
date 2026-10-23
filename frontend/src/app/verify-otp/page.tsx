@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Field, Input } from '@/components/ui/Input';
 import { api, setToken } from '@/lib/api';
-import { VerifyOtpDto } from '@/types';
 
 export default function VerifyOtpPage() {
   const router = useRouter();
@@ -15,90 +15,87 @@ export default function VerifyOtpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    const saved = window.sessionStorage.getItem('jendcithes.otpPhone');
+    if (saved) setPhone(saved);
+  }, []);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setLoading(true);
     setError('');
-
     try {
-      const dto: VerifyOtpDto = { phone, code };
-      const res = await api.post('/auth/verify-otp', dto);
+      const res = await api.post('/auth/verify-otp', { phone, code });
       setToken(res.data.access_token);
-      router.push('/');
+      window.sessionStorage.removeItem('jendcithes.otpPhone');
+      const role = res.data?.user?.role;
+      router.push(role === 'MERCHANT' || role === 'ADMIN' ? '/merchant/dashboard' : '/');
       router.refresh();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Code invalide');
+      setError(err.response?.data?.message || 'Code invalide ou expiré.');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 text-center">
-            Vérification
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Entrez le code OTP envoyé sur votre téléphone
-          </p>
+    <div className="mx-auto flex max-w-md flex-col px-4 py-12 sm:px-6">
+      <div className="rounded-lg border border-line bg-white p-6 shadow-card">
+        <div className="flex h-11 w-11 items-center justify-center rounded-md bg-teal/10 text-teal">
+          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
         </div>
+        <h1 className="mt-4 text-h1 font-semibold">Vérification</h1>
+        <p className="mt-1 text-small text-muted">
+          Saisissez le code à 6 chiffres envoyé au numéro indiqué.
+        </p>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md bg-shadow -space-y-px">
-            <div>
-              <label htmlFor="phone" className="sr-only">
-                Numéro de téléphone
-              </label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                autoComplete="tel"
-                required
-                disabled
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm bg-gray-50"
-                placeholder="+221 70 xxx xxxx"
-                value={phone}
-              />
-            </div>
-            <div>
-              <label htmlFor="code" className="sr-only">
-                Code OTP
-              </label>
-              <Input
-                id="code"
-                name="code"
-                type="text"
-                maxLength={6}
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="123456"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-              />
-            </div>
-          </div>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <Field label="Numéro de téléphone" required htmlFor="phone">
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              required
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+            />
+          </Field>
+          <Field label="Code à 6 chiffres" required htmlFor="code">
+            <Input
+              id="code"
+              name="code"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              required
+              placeholder="123456"
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))}
+              className="numbers text-center text-xl tracking-[0.4em]"
+            />
+          </Field>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+            <p role="alert" className="rounded-md bg-danger/10 p-3 text-small text-danger">{error}</p>
           )}
 
-          <div className="flex items-center justify-between">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Vérification...' : 'Vérifier le code'}
-            </Button>
-          </div>
+          <Button type="submit" className="w-full" loading={loading}>
+            Vérifier et se connecter
+          </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Vous n'avez pas reçu le code ?{' '}
-          <Link href="/login" className="font-medium text-green-600 hover:text-green-500">
-            Renvoyer le code
-          </Link>
+        <p className="mt-4 text-caption text-muted">
+          Code non reçu ? Vérifiez le numéro, puis demandez un nouveau code. En démonstration, le
+          code apparaît dans la console du serveur.
         </p>
       </div>
+
+      <p className="mt-5 text-center text-small text-muted">
+        <Link href="/login" className="font-medium text-teal hover:text-terracotta-dark">
+          Renvoyer un code
+        </Link>
+      </p>
     </div>
   );
 }

@@ -1,121 +1,247 @@
 import Link from 'next/link';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Flame,
+  Hammer,
+  MapPin,
+  ShoppingBasket,
+  Store,
+  Utensils,
+  Wrench,
+} from 'lucide-react';
+import type { Category, Product, Shop } from '@/types';
+import { fetchJson } from '@/lib/server';
+import { ShopCard } from '@/components/shop/ShopCard';
+import { ProductCard } from '@/components/product/ProductCard';
+import { SearchBar } from '@/components/search/SearchBar';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { buttonVariants } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
-import { Product } from '@/types';
-import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+export const revalidate = 60;
 
-const organizationJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'Mboro Market',
-  url: 'http://localhost:3001',
-  logo: 'http://localhost:3001/favicon.ico',
-  description: 'Place de marché locale pour les commerçants de Mboro et Thiès, Sénégal',
-  telephone: '+221771234567',
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: 'Marché de Mboro',
-    addressLocality: 'Mboro',
-    addressRegion: 'Thiès',
-    addressCountry: 'SN',
-  },
-};
+const QUICK_LINKS = [
+  { label: 'Restaurants', href: '/shops?type=RESTAURANT', icon: Utensils },
+  { label: 'Artisans', href: '/shops?type=ARTISAN', icon: Hammer },
+  { label: 'Acheter', href: '/products', icon: ShoppingBasket },
+  { label: 'Services', href: '/shops?type=SERVICE', icon: Wrench },
+];
 
-async function getProducts(): Promise<Product[]> {
-  try {
-    const res = await fetch(`${API_URL}/products?limit=8`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.items || data || [];
-  } catch {
-    return [];
-  }
+interface PublicConfig {
+  pricing?: { activationFee?: number; monthlyFee?: number };
+  locations?: Array<{ name: string }>;
 }
 
 export default async function HomePage() {
-  const products: Product[] = await getProducts();
+  const [shopsData, productsData, categoriesData, config] = await Promise.all([
+    fetchJson<{ items: Shop[] }>('/shops?limit=6'),
+    fetchJson<{ items: Product[] }>('/products?limit=8'),
+    fetchJson<Category[]>('/categories'),
+    fetchJson<PublicConfig>('/config/public'),
+  ]);
+
+  const shops = shopsData?.items ?? [];
+  const products = productsData?.items ?? [];
+  const categories = (categoriesData ?? []).slice(0, 8);
+  const promos = products.filter(
+    (product) =>
+      product.promotionalPrice !== null &&
+      product.promotionalPrice !== undefined &&
+      Number(product.promotionalPrice) < Number(product.price),
+  );
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
+
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'JëndCiThiès',
+    legalName: 'Sen-E-Carte',
+    url: siteUrl,
+    description:
+      'Plateforme de commerce local pour les commerçants, restaurants et artisans de Mboro, Thiès et sa région.',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Thiès',
+      addressRegion: 'Thiès',
+      addressCountry: 'SN',
+    },
+  };
+
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'JëndCiThiès',
+    url: siteUrl,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${siteUrl}/recherche?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  };
 
   return (
-    <div className="space-y-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
-      />
-      <section className="py-12 bg-green-50 rounded-xl border border-green-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-            Mboro Market
-          </h1>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Votre place de marché locale à Mboro et Thiès. Découvrez les produits frais, les artisans et les commerçants de votre région.
+    <div className="space-y-12 pb-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+
+      <section className="motif-bogolan border-b border-line bg-sand/70">
+        <div className="mx-auto max-w-4xl px-4 pb-10 pt-8 text-center sm:px-6 lg:pt-14">
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-caption font-semibold uppercase tracking-[0.12em] text-teal">
+            <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+            Mboro · Thiès · Sénégal
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/products" className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-              Voir les produits
-            </Link>
-            <Link href="/shops" className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50">
-              Voir les boutiques
-            </Link>
+          <h1 className="mt-4 font-display text-[2.25rem] font-semibold leading-tight text-ink sm:text-5xl">
+            Les commerces et services de Thiès,
+            <span className="text-terracotta-dark"> à portée de main.</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl text-body text-muted">
+            Trouvez ce qui est vendu près de chez vous, commandez en quelques clics et suivez votre
+            commande sans appeler.
+          </p>
+          <div className="mx-auto mt-6 max-w-2xl">
+            <SearchBar />
           </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Produits populaires</h2>
-            <Link href="/products" className="text-sm font-medium text-green-600 hover:underline">
-              Voir tout →
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                  <div className="h-48 bg-gray-100 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">{product.shortDescription || 'Image produit'}</span>
-                  </div>
-                  <div className="p-4 flex flex-col flex-grow">
-                    <Link href={`/products/${product.slug}`} className="block mb-2">
-                      <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">{product.title}</h3>
-                      <p className="text-green-600 font-bold">{formatPrice(Number(product.price))}</p>
-                      {product.promotionalPrice && (
-                        <p className="text-sm text-gray-500 line-through">{formatPrice(Number(product.promotionalPrice))}</p>
-                      )}
-                    </Link>
-                    <AddToCartButton product={product} />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-gray-500">
-                Aucun produit disponible pour le moment.
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Nos boutiques partenaires</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="p-6 bg-white rounded-lg border border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-2">Boutique partenaire {i}</h3>
-                <p className="text-sm text-gray-600 mb-4">Produits locaux et frais de Thiès</p>
-                <Link href="/shops" className="text-sm font-medium text-green-600 hover:underline">
-                  Voir la boutique →
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            {QUICK_LINKS.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 text-small font-medium text-ink shadow-card transition-colors hover:border-terracotta hover:text-terracotta-dark"
+                >
+                  <Icon className="h-4 w-4 text-terracotta" aria-hidden="true" />
+                  {link.label}
                 </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
+
+      <div className="mx-auto max-w-7xl space-y-12 px-4 sm:px-6 lg:px-8">
+        {categories.length > 0 && (
+          <section aria-labelledby="categories-titre">
+            <h2 id="categories-titre" className="mb-4 font-display text-h3 font-semibold">
+              Catégories populaires
+            </h2>
+            <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/products?categoryId=${category.id}`}
+                  className="flex min-w-[6.5rem] flex-col items-center gap-2 rounded-lg border border-line bg-white px-4 py-3 text-center shadow-card transition-colors hover:border-teal hover:text-teal"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sand font-display text-lg font-semibold text-terracotta-dark">
+                    {category.name.charAt(0)}
+                  </span>
+                  <span className="text-caption font-medium leading-tight text-ink">{category.name}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section aria-labelledby="boutiques-titre">
+          <div id="boutiques-titre">
+            <SectionHeading title="Près de chez vous" eyebrow="Boutiques & services" href="/shops" />
+          </div>
+          {shops.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {shops.slice(0, 6).map((shop) => (
+                <ShopCard key={shop.id} shop={shop} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={<Store className="h-6 w-6" aria-hidden="true" />}
+              title="Aucune boutique publiée pour le moment"
+              description="Les premières boutiques de Mboro et Thiès apparaîtront ici dès leur mise en ligne."
+              action={
+                <Link href="/register" className={buttonVariants({ variant: 'secondary' })}>
+                  Créer ma boutique
+                </Link>
+              }
+            />
+          )}
+        </section>
+
+        {promos.length > 0 && (
+          <section aria-labelledby="offres-titre">
+            <div id="offres-titre">
+              <SectionHeading title="Offres du moment" eyebrow="Promotions" href="/products" />
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {promos.slice(0, 4).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section aria-labelledby="produits-titre">
+          <div id="produits-titre">
+            <SectionHeading title="À découvrir aujourd’hui" eyebrow="Catalogue" href="/products" />
+          </div>
+          {products.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {products.slice(0, 8).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={<ShoppingBasket className="h-6 w-6" aria-hidden="true" />}
+              title="Le catalogue arrive bientôt"
+              description="Aucun produit n’est publié pour l’instant. Les commerçants préparent leurs fiches."
+            />
+          )}
+        </section>
+
+        <section className="overflow-hidden rounded-lg border border-line bg-teal text-white">
+          <div className="motif-bogolan grid gap-6 px-6 py-8 md:grid-cols-[1.4fr_1fr] md:items-center md:px-10">
+            <div>
+              <p className="text-caption font-semibold uppercase tracking-[0.14em] text-gold">
+                Vous êtes commerçant, restaurateur ou artisan ?
+              </p>
+              <h2 className="mt-2 font-display text-h2 font-semibold text-white">
+                Créez votre boutique en 10 minutes, soyez visible sur Google.
+              </h2>
+              <p className="mt-2 max-w-xl text-small text-white/80">
+                Une vitrine professionnelle, vos commandes centralisées et un assistant en français
+                et en wolof. Sans compétences informatiques.
+              </p>
+            </div>
+            <div className="rounded-lg bg-white/10 p-5 backdrop-blur">
+              <p className="text-small text-white/80">À partir de</p>
+              <p className="numbers mt-1 font-display text-3xl font-semibold text-white">
+                {formatPrice(config?.pricing?.monthlyFee ?? 2500)}
+                <span className="text-base font-normal text-white/70"> / mois</span>
+              </p>
+              <p className="mt-1 text-caption text-white/70">
+                + {formatPrice(config?.pricing?.activationFee ?? 5000)} d’activation unique par boutique
+              </p>
+              <Link
+                href="/register"
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-terracotta px-4 py-3 text-small font-semibold text-white transition-colors hover:bg-terracotta-dark"
+              >
+                Ouvrir ma boutique
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <p className="flex flex-wrap items-center justify-center gap-1.5 pb-4 text-caption text-muted">
+          <Flame className="h-3.5 w-3.5 text-terracotta" aria-hidden="true" />
+          Mises en avant sponsorisées toujours signalées comme telles.
+          <Link href="/shops" className="inline-flex items-center gap-0.5 font-medium text-teal">
+            Explorer <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

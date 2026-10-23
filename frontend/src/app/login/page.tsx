@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Phone } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { api, setToken } from '@/lib/api';
-import { LoginDto } from '@/types';
+import { Field, Input } from '@/components/ui/Input';
+import { api } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,73 +14,68 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setLoading(true);
     setError('');
-
     try {
-      const dto: LoginDto = { phone };
-      await api.post('/auth/login', dto);
+      await api.post('/auth/login', { phone });
+      window.sessionStorage.setItem('jendcithes.otpPhone', phone);
       router.push('/verify-otp');
-      router.refresh();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de la connexion');
+      setError(err.response?.data?.message || 'Impossible d’envoyer le code.');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 text-center">
-            Connexion
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Connectez-vous à votre compte Mboro Market
-          </p>
+    <div className="mx-auto flex max-w-md flex-col px-4 py-12 sm:px-6">
+      <div className="rounded-lg border border-line bg-white p-6 shadow-card">
+        <div className="flex h-11 w-11 items-center justify-center rounded-md bg-terracotta/10 text-terracotta-dark">
+          <Phone className="h-5 w-5" aria-hidden="true" />
         </div>
+        <h1 className="mt-4 text-h1 font-semibold">Connexion</h1>
+        <p className="mt-1 text-small text-muted">
+          Entrez votre numéro de téléphone. Nous vous enverrons un code à 6 chiffres.
+        </p>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md bg-shadow -space-y-px">
-            <div>
-              <label htmlFor="phone" className="sr-only">
-                Numéro de téléphone
-              </label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                autoComplete="tel"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="+221 70 xxx xxxx"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-          </div>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <Field label="Numéro de téléphone" required htmlFor="phone" hint="Format international : +221 77 000 00 00">
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+              required
+              placeholder="+221 77 000 00 00"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+            />
+          </Field>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+            <p role="alert" className="rounded-md bg-danger/10 p-3 text-small text-danger">{error}</p>
           )}
 
-          <div className="flex items-center justify-between">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Chargement...' : 'Envoyer le code OTP'}
-            </Button>
-          </div>
+          <Button type="submit" className="w-full" loading={loading}>
+            Recevoir le code
+          </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Vous n'avez pas de compte ?{' '}
-          <Link href="/register" className="font-medium text-green-600 hover:text-green-500">
-            Créez un compte
-          </Link>
+        <p className="mt-4 text-caption text-muted">
+          En environnement de démonstration, le code OTP est affiché dans les logs du serveur
+          (aucun SMS n’est réellement envoyé).
         </p>
       </div>
+
+      <p className="mt-5 text-center text-small text-muted">
+        Pas encore de compte ?{' '}
+        <Link href="/register" className="font-medium text-teal hover:text-terracotta-dark">
+          Créer un compte
+        </Link>
+      </p>
     </div>
   );
 }

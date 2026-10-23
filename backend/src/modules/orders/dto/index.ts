@@ -1,5 +1,8 @@
+/**
+ * Le client ne fournit JAMAIS de montant (prix, livraison, remise, taxe).
+ * Tout est recalculé côté serveur (§10.2 / ORD-003).
+ */
 export class CreateOrderDto {
-  userId: string;
   shopId: string;
   items: Array<{
     productId?: string;
@@ -7,19 +10,30 @@ export class CreateOrderDto {
     quantity: number;
     options?: Record<string, any>;
   }>;
-  discount?: number;
-  tax?: number;
-  deliveryFee?: number;
-  currency?: string;
+  fulfillment: 'delivery' | 'pickup';
+  deliveryZoneId?: string;
+  deliveryAddress?: {
+    locality?: string;
+    district?: string;
+    landmark?: string;
+    phone?: string;
+    instructions?: string;
+  };
+  paymentMethod?: 'cash' | 'wave' | 'orange_money' | 'card';
   customerNote?: string;
-  deliveryAddress?: Record<string, any>;
-  pickupPoint?: string;
+  /** Clé d'idempotence générée côté client, unique en base. */
+  idempotencyKey?: string;
+}
+
+export class QuoteOrderDto {
+  shopId: string;
+  items: CreateOrderDto['items'];
+  fulfillment?: 'delivery' | 'pickup';
+  deliveryZoneId?: string;
 }
 
 export class UpdateOrderStatusDto {
   status: string;
-  actorId: string;
-  actorType: string;
   reason?: string;
   metadata?: Record<string, any>;
 }

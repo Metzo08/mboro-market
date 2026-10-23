@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto, CreateCategoryFieldDto } from './dto';
@@ -10,9 +11,15 @@ import { CreateCategoryDto, UpdateCategoryDto, CreateCategoryFieldDto } from './
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateCategoryDto) {
+  async create(dto: CreateCategoryDto, user: { id: string; role: string }) {
+    // Les catégories globales (shopId null) sont réservées aux administrateurs.
+    if (!dto.shopId && !['admin', 'super_admin'].includes(user.role)) {
+      throw new ForbiddenException('Seul un administrateur peut créer une catégorie globale');
+    }
+    if (dto.shopId) await this.assertShopAccess(dto.shopId, user);
+
     const existing = await this.prisma.category.findFirst({
-      where: { slug: dto.slug, shopId: dto.shopId },
+      where: { slug: dto.slug, shopId: dto.shopId ?? null },
     });
     if (existing) {
       throw new ConflictException('Cette catégorie existe déjà');
@@ -64,19 +71,31 @@ export class CategoriesService {
     return cat;
   }
 
-  async update(id: string, dto: UpdateCategoryDto) {
+  async update(id: string, dto: UpdateCategoryDto, user: { id: string; role: string }) {
     const cat = await this.prisma.category.findUnique({ where: { id } });
     if (!cat) {
       throw new NotFoundException('Catégorie introuvable');
     }
-    return this.prisma.category.update({ where: { id }, data: dto });
+    if (!cat.shopId && !['admin', 'super_admin'].includes(user.role)) {
+      throw new ForbiddenException('Catégorie globale non modifiable');
+    }
+    if (cat.shopId) await this.assertShopAccess(cat.shopId, user);
+    return this.prisma.category.update({ where: { id }, data: dto as any });
   }
 
   async remove(id: string) {
     return this.prisma.category.delete({ where: { id } });
   }
 
-  async addField(categoryId: string, dto: CreateCategoryFieldDto) {
+  async addField(categoryId: string, dto: CreateCategoryFieldDto, user: { id: string; role: string }) {
+    const cat = await this.prisma.category.findUnique({ where: { id: categoryId } });
+    if (!cat) {
+      throw new NotFoundException('Catégorie introuvable');
+    }
+    if (!cat.shopId && !['admin', 'super_admin'].includes(user.role)) {
+      throw new ForbiddenException('Catégorie globale non modifiable');
+    }
+    if (cat.shopId) await this.assertShopAccess(cat.shopId, user);
     return this.prisma.categoryField.create({
       data: {
         categoryId,
@@ -92,5 +111,17 @@ export class CategoriesService {
         defaultValue: dto.defaultValue,
       },
     });
+  }
+
+  private async assertShopAccess(shopId: string, user: { id: string; role: string }) {
+    if (['admin', 'super_admin'].includes(user.role)) return;
+    const shop = await this.prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },
+    });
+    if (!shop) throw new NotFoundException('Boutique introuvable');
+    if (shop.ownerId !== user.id && shop.members.length === 0) {
+      throw new ForbiddenException('Accès refusé à cette boutique');
+    }
   }
 }

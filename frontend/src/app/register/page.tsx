@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Store, User } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Field, Input } from '@/components/ui/Input';
 import { api } from '@/lib/api';
-import { RegisterDto } from '@/types';
+import { cn } from '@/lib/utils';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,102 +17,67 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setLoading(true);
     setError('');
-
     try {
-      const dto: RegisterDto = { phone, email: email || undefined, role };
-      await api.post('/auth/register', dto);
-      router.push('/login');
+      await api.post('/auth/register', { phone, email: email || undefined, role });
+      window.sessionStorage.setItem('jendcithes.otpPhone', phone);
+      router.push('/verify-otp');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de l\'inscription');
+      setError(err.response?.data?.message || 'Impossible de créer le compte.');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 text-center">
-            Créer un compte
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Rejoignez la place de marché locale de Mboro
-          </p>
-        </div>
+    <div className="mx-auto flex max-w-lg flex-col px-4 py-12 sm:px-6">
+      <div className="rounded-lg border border-line bg-white p-6 shadow-card">
+        <h1 className="text-h1 font-semibold">Créer un compte</h1>
+        <p className="mt-1 text-small text-muted">
+          Le téléphone est votre identifiant. L’email est facultatif.
+        </p>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md bg-shadow -space-y-px">
-            <div>
-              <label htmlFor="phone" className="sr-only">
-                Numéro de téléphone
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <fieldset>
+            <legend className="text-small font-medium text-ink">Je suis…</legend>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <label className={cn('flex cursor-pointer items-center gap-2 rounded-md border p-3 text-small', role === 'customer' ? 'border-teal bg-teal/5 font-semibold' : 'border-line')}>
+                <input type="radio" name="role" checked={role === 'customer'} onChange={() => setRole('customer')} />
+                <User className="h-4 w-4 text-teal" aria-hidden="true" /> Un client
               </label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                autoComplete="tel"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="+221 70 xxx xxxx"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email
+              <label className={cn('flex cursor-pointer items-center gap-2 rounded-md border p-3 text-small', role === 'merchant' ? 'border-teal bg-teal/5 font-semibold' : 'border-line')}>
+                <input type="radio" name="role" checked={role === 'merchant'} onChange={() => setRole('merchant')} />
+                <Store className="h-4 w-4 text-terracotta" aria-hidden="true" /> Un commerçant
               </label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
             </div>
-            <div className="px-4 py-3 border-b border-gray-300 sm:rounded-b-md">
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                Je suis
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value as any)}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
-              >
-                <option value="customer">Un client</option>
-                <option value="merchant">Un commerçant</option>
-              </select>
-            </div>
-          </div>
+          </fieldset>
+
+          <Field label="Numéro de téléphone" required htmlFor="phone">
+            <Input id="phone" name="phone" type="tel" autoComplete="tel" required placeholder="+221 77 000 00 00" value={phone} onChange={(event) => setPhone(event.target.value)} />
+          </Field>
+          <Field label="Email (facultatif)" htmlFor="email" hint="Utile pour recevoir vos factures.">
+            <Input id="email" name="email" type="email" autoComplete="email" placeholder="vous@exemple.sn" value={email} onChange={(event) => setEmail(event.target.value)} />
+          </Field>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+            <p role="alert" className="rounded-md bg-danger/10 p-3 text-small text-danger">{error}</p>
           )}
 
-          <div className="flex items-center justify-between">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Chargement...' : 'S\'inscrire'}
-            </Button>
-          </div>
+          <Button type="submit" className="w-full" loading={loading}>
+            Créer mon compte
+          </Button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Vous avez déjà un compte ?{' '}
-          <Link href="/login" className="font-medium text-green-600 hover:text-green-500">
-            Connectez-vous
-          </Link>
-        </p>
       </div>
+
+      <p className="mt-5 text-center text-small text-muted">
+        Vous avez déjà un compte ?{' '}
+        <Link href="/login" className="font-medium text-teal hover:text-terracotta-dark">
+          Se connecter
+        </Link>
+      </p>
     </div>
   );
 }

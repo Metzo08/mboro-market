@@ -1,23 +1,52 @@
 'use client';
 
+import { useState } from 'react';
+import { Check, Plus } from 'lucide-react';
 import { useCart } from './CartProvider';
 import { Product } from '@/types';
 import { Button } from '@/components/ui/Button';
 
 interface AddToCartButtonProps {
   product: Product;
+  full?: boolean;
 }
 
-export function AddToCartButton({ product }: AddToCartButtonProps) {
-  const { addItem, itemCount } = useCart();
+export function AddToCartButton({ product, full = true }: AddToCartButtonProps) {
+  const { addItem } = useCart();
+  const [added, setAdded] = useState(false);
+
+  const outOfStock =
+    product.availability === 'out_of_stock' ||
+    (product.trackInventory !== false && product.stock <= 0);
+
+  if (outOfStock) {
+    return (
+      <Button variant="tertiary" size="sm" className={full ? 'w-full' : ''} disabled>
+        Épuisé
+      </Button>
+    );
+  }
 
   return (
-    <button
-      onClick={() => addItem(product, 1)}
-      className="w-full px-4 py-2 bg-green-600 text-white text-sm rounded-md font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+    <Button
+      size="sm"
+      variant={added ? 'secondary' : 'primary'}
+      className={full ? 'w-full' : ''}
+      onClick={() => {
+        addItem(product, 1);
+        setAdded(true);
+        window.setTimeout(() => setAdded(false), 1600);
+      }}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M6 2L3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6l-3-4z"></path><circle cx="15.5" cy="19" r="1.5"></circle><circle cx="7.5" cy="19" r="1.5"></circle></svg>
-      Ajouter au panier
-    </button>
+      {added ? (
+        <>
+          <Check className="h-4 w-4" aria-hidden="true" /> Ajouté
+        </>
+      ) : (
+        <>
+          <Plus className="h-4 w-4" aria-hidden="true" /> Ajouter
+        </>
+      )}
+    </Button>
   );
 }

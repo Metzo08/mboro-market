@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class DeliveryService {
   constructor(private prisma: PrismaService) {}
 
-  async createZone(dto: any) {
+  async createZone(dto: any, user?: { id: string; role: string }) {
+    if (user) await this.assertShopAccess(dto.shopId, user);
     return this.prisma.deliveryZone.create({
       data: {
         shopId: dto.shopId,
@@ -27,7 +28,8 @@ export class DeliveryService {
     return this.prisma.deliveryZone.findMany({ where: { shopId } });
   }
 
-  async createTask(dto: any) {
+  async createTask(dto: any, user?: { id: string; role: string }) {
+    if (user) await this.assertShopAccess(dto.shopId, user);
     return this.prisma.deliveryTask.create({
       data: {
         orderId: dto.orderId,
@@ -37,5 +39,17 @@ export class DeliveryService {
         status: dto.status ?? 'pending',
       },
     });
+  }
+
+  private async assertShopAccess(shopId: string, user: { id: string; role: string }) {
+    if (['admin', 'super_admin'].includes(user.role)) return;
+    const shop = await this.prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },
+    });
+    if (!shop) throw new NotFoundException('Boutique introuvable');
+    if (shop.ownerId !== user.id && shop.members.length === 0) {
+      throw new ForbiddenException('Accès refusé à cette boutique');
+    }
   }
 }

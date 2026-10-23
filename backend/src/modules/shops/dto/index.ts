@@ -8,8 +8,8 @@ export class CreateShopDto {
   email?: string;
   whatsapp?: string;
   publicAddress?: string;
-  organizationId: string;
-  ownerId: string;
+  /** Optionnel : vérifié côté serveur, jamais l'ownerId (dérivé du JWT). */
+  organizationId?: string;
 }
 
 export class UpdateShopDto {
@@ -21,4 +21,9 @@ export class UpdateShopDto {
   email?: string;
   whatsapp?: string;
   publicAddress?: string;
+  openingHours?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
+  deliveryZones?: unknown[];
+  seoTitle?: string;
+  seoDescription?: string;
 }

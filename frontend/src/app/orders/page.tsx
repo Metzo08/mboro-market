@@ -1,11 +1,16 @@
 'use client';
 
-import { api, getToken, removeToken } from '@/lib/api';
-import { formatPrice, formatDate } from '@/lib/utils';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Order } from '@/types';
+import { ChevronRight, Package } from 'lucide-react';
+import { api, getToken } from '@/lib/api';
+import { formatDateTime, formatPrice } from '@/lib/utils';
+import { orderStatusMeta, paymentStatusMeta } from '@/lib/status';
+import { Badge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { buttonVariants } from '@/components/ui/Button';
+import type { Order } from '@/types';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -13,123 +18,90 @@ export default function OrdersPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      window.location.href = `/login?callback=/orders`;
+    if (!getToken()) {
+      window.location.href = '/login?callback=/orders';
       return;
     }
 
-    api.get('/auth/me')
+    api
+      .get('/orders')
       .then((res) => {
-        const userId = res.data.user.id;
-        return api.get('/orders', { params: { userId } });
-      })
-      .then((res) => {
-        setOrders(res.data.items || res.data || []);
-        setLoading(false);
+        setOrders(res.data.items ?? res.data ?? []);
       })
       .catch((err) => {
-        setError(err.response?.data?.message || 'Erreur lors du chargement des commandes');
-        setLoading(false);
-      });
+        setError(err.response?.data?.message || 'Impossible de charger vos commandes.');
+      })
+      .finally(() => setLoading(false));
   }, []);
-
-  if (!getToken()) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-20">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Connexion requise</h2>
-          <p className="text-gray-600 mb-8">Vous devez être connecté pour voir vos commandes.</p>
-          <Link href="/login" className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-            Se connecter
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-20">
-          <p className="text-gray-600">Chargement des commandes...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-20">
-          <p className="text-red-600">{error}</p>
-          <Link href="/login" className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 mt-4 inline-block">
-            Se reconnecter
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (orders.length === 0) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-20">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Aucune commande</h2>
-          <p className="text-gray-600 mb-8">Vous n'avez pas encore passé de commande.</p>
-          <Link href="/products" className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-            Voir les produits
-          </Link>
-        </div>
+      <div className="mx-auto max-w-3xl space-y-3 px-4 py-8 sm:px-6 lg:px-8">
+        <Skeleton className="h-8 w-48" />
+        {[0, 1, 2].map((index) => (
+          <Skeleton key={index} className="h-28 w-full" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Mes commandes</h2>
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600">Numéro</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600">Date</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600">Statut</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600">Total</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600">Paiement</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{order.orderNumber}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{formatDate(order.createdAt)}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    order.status === 'DELIVERED' || order.status === 'COMPLETED'
-                      ? 'bg-green-100 text-green-800'
-                      : order.status === 'CANCELLED'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {order.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{formatPrice(Number(order.total))}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{order.paymentMethod || '—'}</div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="mb-5">
+        <p className="text-caption font-semibold uppercase tracking-[0.14em] text-terracotta-dark">
+          Mon compte
+        </p>
+        <h1 className="text-h1 font-semibold">Mes commandes</h1>
+      </header>
+
+      {error && (
+        <p role="alert" className="mb-4 rounded-md bg-danger/10 p-3 text-small text-danger">
+          {error}
+        </p>
+      )}
+
+      {orders.length === 0 ? (
+        <EmptyState
+          icon={<Package className="h-6 w-6" aria-hidden="true" />}
+          title="Aucune commande pour le moment"
+          description="Vos commandes apparaîtront ici avec leur statut, sans avoir à appeler la boutique."
+          action={
+            <Link href="/products" className={buttonVariants()}>
+              Découvrir les produits
+            </Link>
+          }
+        />
+      ) : (
+        <ul className="space-y-3">
+          {orders.map((order) => {
+            const status = orderStatusMeta(order.status);
+            const payment = paymentStatusMeta(order.paymentStatus);
+            return (
+              <li key={order.id} className="rounded-lg border border-line bg-white shadow-card">
+                <Link href={`/orders/${order.id}`} className="flex items-center gap-4 p-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="numbers text-small font-semibold text-ink">{order.orderNumber}</span>
+                      <Badge tone={status.tone}>{status.label}</Badge>
+                      <Badge tone={payment.tone}>{payment.label}</Badge>
+                    </div>
+                    <p className="mt-1 truncate text-small text-muted">
+                      {order.shop?.name ?? 'Boutique'} · {formatDateTime(order.createdAt)}
+                    </p>
+                    <p className="mt-1 text-caption text-muted">
+                      {(order.items ?? []).map((item) => `${item.quantity} × ${item.name}`).join(' · ')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="numbers text-small font-bold text-ink">{formatPrice(order.total)}</p>
+                    <ChevronRight className="ml-auto mt-1 h-4 w-4 text-muted" aria-hidden="true" />
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

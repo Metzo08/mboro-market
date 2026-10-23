@@ -1,20 +1,27 @@
-export const dynamic = 'force-dynamic';
+import type { MetadataRoute } from 'next';
 
-export default function Robots(): string {
-  return `User-agent: *
-Allow: /
-Allow: /products
-Allow: /shops
-Allow: /cart
-Allow: /checkout
-Allow: /orders
-Allow: /login
-Allow: /register
-Allow: /verify-otp
-Disallow: /api/
-Disallow: /merchant/
-Disallow: /_next/
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
 
-Sitemap: http://localhost:3001/sitemap.xml
-`;
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/merchant/',
+          '/cart',
+          '/checkout',
+          '/orders',
+          '/login',
+          '/register',
+          '/verify-otp',
+          '/recherche',
+        ],
+      },
+    ],
+    sitemap: `${BASE_URL}/sitemap.xml`,
+    host: BASE_URL,
+  };
 }

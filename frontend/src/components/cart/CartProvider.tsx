@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { Product } from '@/types';
 
-interface CartItem {
+export interface CartItem {
   product: Product;
   variantId?: string;
   quantity: number;
@@ -17,12 +17,15 @@ interface CartContextType {
   clear: () => void;
   total: number;
   itemCount: number;
+  shopId?: string;
+  unitPrice: (item: CartItem) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('cart');
@@ -33,22 +36,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems([]);
       }
     }
+    setHydrated(true);
   }, []);
 
+  // On n'écrit qu'après la lecture initiale : évite d'écraser le panier
+  // sauvegardé par un tableau vide au premier rendu.
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem('cart', JSON.stringify(items));
-  }, [items]);
+  }, [items, hydrated]);
 
   const addItem = useCallback((product: Product, quantity: number = 1, variantId?: string) => {
     setItems((prev) => {
+      // MVP : commande mono-boutique. On demande confirmation avant de vider
+      // un panier appartenant à une autre boutique (§1.3 / ORD-001).
+      const otherShop = prev.find((i) => i.product.shopId !== product.shopId);
+      if (otherShop && typeof window !== 'undefined') {
+        const confirmed = window.confirm(
+          'Votre panier contient des articles d’une autre boutique. Voulez-vous le remplacer ?',
+        );
+        if (!confirmed) return prev;
+        prev = [];
+      }
+
       const existing = prev.find(
-        (i) => i.product.id === product.id && i.variantId === variantId
+        (i) => i.product.id === product.id && i.variantId === variantId,
       );
       if (existing) {
         return prev.map((i) =>
           i.product.id === product.id && i.variantId === variantId
             ? { ...i, quantity: i.quantity + quantity }
-            : i
+            : i,
         );
       }
       return [...prev, { product, quantity, variantId }];
@@ -79,11 +97,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   }, []);
 
-  const total = items.reduce((sum, i) => sum + Number(i.product.price) * i.quantity, 0);
+  const unitPrice = (item: CartItem) =>
+    Number(
+      item.product.promotionalPrice !== null &&
+        item.product.promotionalPrice !== undefined &&
+        Number(item.product.promotionalPrice) < Number(item.product.price)
+        ? item.product.promotionalPrice
+        : item.product.price,
+    );
+
+  const total = items.reduce((sum, i) => sum + unitPrice(i) * i.quantity, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const shopId = items[0]?.product.shopId;
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clear, total, itemCount }}>
+    <CartContext.Provider
+      value={{ items, addItem, removeItem, updateQuantity, clear, total, itemCount, shopId, unitPrice }}
+    >
       {children}
     </CartContext.Provider>
   );

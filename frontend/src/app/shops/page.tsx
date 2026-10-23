@@ -1,83 +1,106 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { formatPrice } from '@/lib/utils';
-import { Shop } from '@/types';
+import { Store } from 'lucide-react';
+import type { Shop } from '@/types';
+import { fetchJson } from '@/lib/server';
+import { ShopCard } from '@/components/shop/ShopCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { SearchBar } from '@/components/search/SearchBar';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-
-async function getShops(): Promise<Shop[]> {
-  try {
-    const res = await fetch(`${API_URL}/shops`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.items || data || [];
-  } catch {
-    return [];
-  }
+interface ShopsPageProps {
+  searchParams: Promise<{ q?: string; type?: string; locality?: string }>;
 }
 
-export default async function ShopsPage() {
-  const shops: Shop[] = await getShops();
+export const metadata: Metadata = {
+  title: 'Boutiques et commerçants de Mboro et Thiès',
+  description:
+    'Annuaire des commerçants, restaurants et artisans de Mboro, Thiès et sa région. Horaires, contacts et catalogue en ligne.',
+  alternates: { canonical: '/shops' },
+};
+
+const TYPES = [
+  { value: '', label: 'Tout' },
+  { value: 'RETAIL', label: 'Commerces' },
+  { value: 'RESTAURANT', label: 'Restaurants' },
+  { value: 'ARTISAN', label: 'Artisans' },
+  { value: 'SERVICE', label: 'Services' },
+];
+
+export default async function ShopsPage({ searchParams }: ShopsPageProps) {
+  const { q, type, locality } = await searchParams;
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (type) params.set('type', type);
+  if (locality) params.set('locality', locality);
+  params.set('limit', '60');
+
+  const data = await fetchJson<{ items: Shop[]; total: number }>(`/shops?${params.toString()}`);
+  const shops = data?.items ?? [];
+  const total = data?.total ?? shops.length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Nos boutiques</h1>
-        <p className="text-gray-600">Découvrez les commerçants de Mboro et Thiès</p>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="mb-8">
+        <p className="text-caption font-semibold uppercase tracking-[0.14em] text-terracotta-dark">
+          Annuaire local
+        </p>
+        <h1 className="mt-1 text-h1 font-semibold">Boutiques et commerçants</h1>
+        <p className="mt-2 max-w-2xl text-body text-muted">
+          {total > 0 ? `${total} boutique${total > 1 ? 's' : ''} publient leur catalogue à Mboro, Thiès et alentours.` : 'Les commerçants de votre région, réunis au même endroit.'}
+        </p>
+        <div className="mt-5 max-w-2xl">
+          <SearchBar defaultValue={q} size="md" placeholder="Nom de boutique, produit ou spécialité…" id="recherche-boutiques" />
+        </div>
+      </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {shops.length > 0 ? (
-          shops.map((shop) => (
-            <div key={shop.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-              <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                  __html: JSON.stringify({
-                    '@context': 'https://schema.org',
-                    '@type': 'Store',
-                    name: shop.name,
-                    description: shop.shortDescription || '',
-                    url: `http://localhost:3001/shops/${shop.slug}`,
-                    address: {
-                      '@type': 'PostalAddress',
-                      addressLocality: 'Mboro',
-                      addressRegion: 'Thiès',
-                      addressCountry: 'SN',
-                    },
-                    telephone: shop.phone || '',
-                  }),
-                }}
-              />
-              <div className="h-48 bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-400 text-sm">{shop.name}</span>
-              </div>
-              <div className="p-4">
-                <Link href={`/shops/${shop.slug}`} className="block">
-                  <h3 className="font-semibold text-gray-900 mb-1">{shop.name}</h3>
-                  <p className="text-sm text-gray-600 mb-3">{shop.shortDescription || 'Commerçant local à Thiès'}</p>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full {shop.status === 'ACTIVE' ? 'bg-green-500' : 'bg-gray-400'}"></span>
-                      {shop.status === 'ACTIVE' ? 'Ouvert' : 'Fermé'}
-                    </span>
-                  </div>
-                </Link>
-                <div className="flex gap-2">
-                  <Link href={`/shops/${shop.slug}`} className="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded-lg text-center hover:bg-green-700">
-                    Voir la boutique
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12 text-gray-500">
-            Aucune boutique pour le moment.
-          </div>
-        )}
-      </div>
+      <nav aria-label="Filtrer par activité" className="no-scrollbar mb-6 flex gap-2 overflow-x-auto pb-1">
+        {TYPES.map((item) => {
+          const href = item.value ? `/shops?type=${item.value}${q ? `&q=${encodeURIComponent(q)}` : ''}` : `/shops${q ? `?q=${encodeURIComponent(q)}` : ''}`;
+          const active = (type ?? '') === item.value;
+          return (
+            <Link
+              key={item.label}
+              href={href}
+              aria-current={active ? 'page' : undefined}
+              className={
+                active
+                  ? 'whitespace-nowrap rounded-full bg-teal px-4 py-2 text-small font-medium text-white'
+                  : 'whitespace-nowrap rounded-full border border-line bg-white px-4 py-2 text-small font-medium text-ink hover:border-teal hover:text-teal'
+              }
+            >
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {q && (
+        <p className="mb-4 text-small text-muted">
+          Résultats pour « <span className="font-medium text-ink">{q}</span> » —{' '}
+          <Link href="/shops" className="text-teal underline underline-offset-2">
+            effacer la recherche
+          </Link>
+        </p>
+      )}
+
+      {shops.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {shops.map((shop) => (
+            <ShopCard key={shop.id} shop={shop} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={<Store className="h-6 w-6" aria-hidden="true" />}
+          title="Aucune boutique trouvée"
+          description="Essayez un autre mot-clé, une autre activité, ou créez votre boutique si vous êtes commerçant."
+          action={
+            <Link href="/register" className="rounded-md bg-terracotta px-4 py-2.5 text-small font-semibold text-white hover:bg-terracotta-dark">
+              Devenir commerçant
+            </Link>
+          }
+        />
+      )}
     </div>
   );
 }

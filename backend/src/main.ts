@@ -35,7 +35,17 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  const port = process.env.PORT || 3000;
+  const port = Number(process.env.PORT || 3000);
+
+  // Le frontend Next.js occupe le port 3001 : un backend sur ce port provoque
+  // systématiquement EADDRINUSE côté frontend. On échoue vite avec un message clair.
+  if (port === 3001) {
+    console.error(
+      '❌ PORT=3001 est réservé au frontend Next.js. Utilisez PORT=3000 dans backend/.env, puis relancez.',
+    );
+    process.exit(1);
+  }
+
   await app.listen(port);
   console.log(`🚀 Serveur démarré sur le port ${port}`);
 }

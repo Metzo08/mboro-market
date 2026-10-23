@@ -81,14 +81,36 @@ export class AuthService {
       throw new ConflictException('Ce numéro de téléphone est déjà utilisé');
     }
 
+    const role = (data.role || 'CUSTOMER').toUpperCase();
     const user = await this.prisma.user.create({
       data: {
         phone: data.phone,
         email: data.email,
-        role: (data.role || 'CUSTOMER') as any,
+        role: role as any,
         status: 'PENDING_VERIFICATION',
       },
     });
+
+    // Un commerçant doit pouvoir créer sa boutique immédiatement après vérification :
+    // on lui crée une organisation personnelle (multi-boutiques possible ensuite).
+    if (role === 'MERCHANT') {
+      const slugBase = `org-${data.phone.replace(/[^0-9]/g, '')}`;
+      const existingOrg = await this.prisma.organization.findUnique({ where: { slug: slugBase } });
+      const organization =
+        existingOrg ??
+        (await this.prisma.organization.create({
+          data: {
+            name: `Organisation ${data.phone}`,
+            slug: slugBase,
+            ownerId: user.id,
+            status: 'active',
+            verificationStatus: 'pending',
+          },
+        }));
+      await this.prisma.organizationMember.create({
+        data: { organizationId: organization.id, userId: user.id, role: 'OWNER' },
+      });
+    }
 
     return { message: 'Compte créé, vérifiez votre téléphone', userId: user.id };
   }

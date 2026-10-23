@@ -1,276 +1,285 @@
 'use client';
 
-import { api, getToken, removeToken } from '@/lib/api';
-import { formatPrice } from '@/lib/utils';
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Pencil, Plus, Trash2, X } from 'lucide-react';
+import { api } from '@/lib/api';
+import { useMerchantShop } from '@/lib/useMerchantShop';
+import { formatPrice, slugify } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Trash2, Edit2, Plus } from 'lucide-react';
-import { Product } from '@/types';
+import { Field, Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
+import { Skeleton } from '@/components/ui/Skeleton';
+import type { Category, Product } from '@/types';
+
+interface FormState {
+  title: string;
+  slug: string;
+  shortDescription: string;
+  description: string;
+  price: string;
+  promotionalPrice: string;
+  stock: string;
+  categoryId: string;
+}
+
+const EMPTY_FORM: FormState = {
+  title: '',
+  slug: '',
+  shortDescription: '',
+  description: '',
+  price: '',
+  promotionalPrice: '',
+  stock: '',
+  categoryId: '',
+};
 
 export default function MerchantProducts() {
-  const router = useRouter();
+  const { shop, loading: shopLoading } = useMerchantShop();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    slug: '',
-    shortDescription: '',
-    description: '',
-    price: '',
-    stock: '',
-    categoryId: '',
-  });
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/login?callback=/merchant/products');
-      return;
-    }
-    loadProducts();
-  }, [router]);
-
-  const loadProducts = async () => {
+  async function loadProducts(shopId: string) {
     try {
-      const res = await api.get('/products');
-      setProducts(res.data.items || res.data || []);
+      const res = await api.get('/products', { params: { shopId, limit: 60 } });
+      setProducts(res.data.items ?? res.data ?? []);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors du chargement');
+      setError(err.response?.data?.message || 'Impossible de charger le catalogue.');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    api.get('/categories').then((res) => setCategories(res.data ?? [])).catch(() => setCategories([]));
+  }, []);
+
+  useEffect(() => {
+    if (shop) loadProducts(shop.id);
+  }, [shop]);
+
+  const categoriesById = useMemo(
+    () => Object.fromEntries(categories.map((category) => [category.id, category.name])),
+    [categories],
+  );
+
+  function openCreate() {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+    setShowForm(true);
+  }
+
+  function openEdit(product: Product) {
+    setEditingId(product.id);
+    setForm({
+      title: product.title,
+      slug: product.slug,
+      shortDescription: product.shortDescription ?? '',
+      description: product.description ?? '',
+      price: String(product.price),
+      promotionalPrice: product.promotionalPrice ? String(product.promotionalPrice) : '',
+      stock: String(product.stock),
+      categoryId: product.categoryId ?? '',
+    });
+    setShowForm(true);
+  }
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    if (!shop) return;
+    setSaving(true);
+    setError('');
+    const payload = {
+      title: form.title,
+      slug: form.slug || slugify(form.title),
+      shortDescription: form.shortDescription || undefined,
+      description: form.description || undefined,
+      price: Number(form.price),
+      promotionalPrice: form.promotionalPrice ? Number(form.promotionalPrice) : undefined,
+      stock: Number(form.stock || 0),
+      categoryId: form.categoryId || undefined,
+    };
     try {
       if (editingId) {
-        await api.patch(`/products/${editingId}`, {
-          title: formData.title,
-          slug: formData.slug,
-          shortDescription: formData.shortDescription,
-          description: formData.description,
-          price: Number(formData.price),
-          stock: Number(formData.stock),
-        });
+        await api.patch(`/products/${editingId}`, payload);
       } else {
-        await api.post('/products', {
-          title: formData.title,
-          slug: formData.slug,
-          shortDescription: formData.shortDescription,
-          description: formData.description,
-          price: Number(formData.price),
-          stock: Number(formData.stock),
-          shopId: '8e0b526e-e8d1-455f-8eac-245f0d4aa84c', // ID de la boutique démo
-          categoryId: formData.categoryId || undefined,
-        });
+        await api.post('/products', { ...payload, shopId: shop.id });
       }
       setShowForm(false);
       setEditingId(null);
-      setFormData({ title: '', slug: '', shortDescription: '', description: '', price: '', stock: '', categoryId: '' });
-      loadProducts();
+      setForm(EMPTY_FORM);
+      await loadProducts(shop.id);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de l\'enregistrement');
+      setError(err.response?.data?.message || 'Enregistrement impossible.');
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const handleEdit = (product: Product) => {
-    setEditingId(product.id);
-    setFormData({
-      title: product.title,
-      slug: product.slug,
-      shortDescription: product.shortDescription || '',
-      description: product.description || '',
-      price: String(product.price),
-      stock: String(product.stock),
-      categoryId: product.categoryId || '',
-    });
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Supprimer ce produit ?')) return;
-    try {
-      await api.delete(`/products/${id}`);
-      loadProducts();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de la suppression');
-    }
-  };
-
-  if (!getToken()) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-20">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Connexion requise</h2>
-          <Link href="/login" className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-            Se connecter
-          </Link>
-        </div>
-      </div>
-    );
   }
 
-  if (loading) {
+  async function removeProduct(product: Product) {
+    if (!confirm(`Supprimer « ${product.title} » ? Cette action est définitive.`)) return;
+    try {
+      await api.delete(`/products/${product.id}`);
+      if (shop) await loadProducts(shop.id);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Suppression impossible.');
+    }
+  }
+
+  if (shopLoading || loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-20">
-          <p className="text-gray-600">Chargement des produits...</p>
-        </div>
+      <div className="space-y-3">
+        <Skeleton className="h-8 w-56" />
+        {[0, 1, 2].map((index) => (
+          <Skeleton key={index} className="h-20 w-full" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des produits</h1>
-        <Button onClick={() => { setEditingId(null); setFormData({ title: '', slug: '', shortDescription: '', description: '', price: '', stock: '', categoryId: '' }); setShowForm(true); }} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Ajouter un produit
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-h1 font-semibold">Catalogue</h1>
+          <p className="mt-1 text-small text-muted">{products.length} produit(s) publiés</p>
+        </div>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4" aria-hidden="true" /> Nouveau produit
         </Button>
-      </div>
+      </header>
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <p role="alert" className="rounded-md bg-danger/10 p-3 text-small text-danger">{error}</p>
       )}
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600">Produit</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600 text-right">Prix</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600 text-right">Stock</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600 text-right">Statut</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-600 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {products.length > 0 ? (
-              products.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">{p.title}</div>
-                    <div className="text-sm text-gray-500">{p.shortDescription || ''}</div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="text-sm font-medium text-gray-900">{formatPrice(Number(p.price))}</div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="text-sm text-gray-500">{p.stock}</div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      p.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>{p.status}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(p)}
-                      className="flex items-center gap-1"
-                    >
-                      <Edit2 className="h-3 w-3" />
-                      Modifier
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(p.id)}
-                      className="flex items-center gap-1"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                  Aucun produit. Ajoutez votre premier produit !
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {products.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-line bg-white p-8 text-center">
+          <p className="font-medium text-ink">Votre catalogue est vide</p>
+          <p className="mt-1 text-small text-muted">Ajoutez votre premier produit pour le rendre visible.</p>
+          <Button className="mt-4" onClick={openCreate}>
+            Ajouter un produit
+          </Button>
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {products.map((product) => (
+            <li key={product.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-white p-3">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-sm bg-sand font-display text-xl font-semibold text-terracotta/60">
+                {product.title.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-small font-semibold text-ink">{product.title}</p>
+                <p className="text-caption text-muted">
+                  {product.categoryId ? categoriesById[product.categoryId] ?? 'Catégorie' : 'Sans catégorie'}
+                </p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <span className="numbers text-small font-bold text-terracotta-dark">{formatPrice(product.price)}</span>
+                  <Badge tone={product.stock > 0 ? 'success' : 'danger'}>
+                    {product.stock > 0 ? `${product.stock} en stock` : 'Épuisé'}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => openEdit(product)}
+                  aria-label={`Modifier ${product.title}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-md text-muted hover:bg-sand hover:text-ink"
+                >
+                  <Pencil className="h-4 w-4" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeProduct(product)}
+                  aria-label={`Supprimer ${product.title}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-md text-muted hover:bg-danger/10 hover:text-danger"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {showForm && (
-        <div className="mt-6 bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {editingId ? 'Modifier le produit' : 'Nouveau produit'}
-          </h3>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2 space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Nom du produit</label>
+        <div className="rounded-lg border border-line bg-white p-5 shadow-card">
+          <div className="flex items-center justify-between">
+            <h2 className="text-h3 font-semibold">{editingId ? 'Modifier le produit' : 'Nouveau produit'}</h2>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              aria-label="Fermer le formulaire"
+              className="text-muted hover:text-ink"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+          <form onSubmit={save} className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Field label="Nom du produit" required htmlFor="title" className="sm:col-span-2">
               <Input
-                placeholder="Ex: Mangues fraîches de Mboro"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                id="title"
+                value={form.title}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    title: event.target.value,
+                    slug: editingId ? current.slug : slugify(event.target.value),
+                  }))
+                }
                 required
               />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Slug (URL)</label>
-              <Input
-                placeholder="ex: mangues-fraiches-mboro"
-                value={formData.slug}
-                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                required
+            </Field>
+            <Field label="URL (slug)" required htmlFor="slug" hint="Lettres minuscules, chiffres et tirets.">
+              <Input id="slug" value={form.slug} onChange={(event) => setForm({ ...form, slug: slugify(event.target.value) })} required />
+            </Field>
+            <Field label="Catégorie" htmlFor="category">
+              <select
+                id="category"
+                value={form.categoryId}
+                onChange={(event) => setForm({ ...form, categoryId: event.target.value })}
+                className="h-11 w-full rounded-sm border border-line bg-white px-3 text-body"
+              >
+                <option value="">Sans catégorie</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Prix (FCFA)" required htmlFor="price">
+              <Input id="price" type="number" min={0} value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} required />
+            </Field>
+            <Field label="Prix promotionnel (facultatif)" htmlFor="promo" hint="Doit être inférieur au prix normal.">
+              <Input id="promo" type="number" min={0} value={form.promotionalPrice} onChange={(event) => setForm({ ...form, promotionalPrice: event.target.value })} />
+            </Field>
+            <Field label="Stock" htmlFor="stock">
+              <Input id="stock" type="number" min={0} value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} />
+            </Field>
+            <Field label="Description courte" htmlFor="short" className="sm:col-span-2">
+              <Input id="short" value={form.shortDescription} onChange={(event) => setForm({ ...form, shortDescription: event.target.value })} />
+            </Field>
+            <Field label="Description complète" htmlFor="description" className="sm:col-span-2">
+              <textarea
+                id="description"
+                rows={4}
+                value={form.description}
+                onChange={(event) => setForm({ ...form, description: event.target.value })}
+                className="w-full rounded-sm border border-line bg-white px-3 py-2 text-body focus-visible:border-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/25"
               />
-            </div>
-            <div className="md:col-span-2 space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Description courte</label>
-              <Input
-                value={formData.shortDescription}
-                onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-              />
-            </div>
-            <div className="md:col-span-2 space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Description complète</label>
-              <Input
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Prix (XOF)</label>
-              <Input
-                type="number"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Stock</label>
-              <Input
-                type="number"
-                value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                required
-              />
-            </div>
-            <div className="md:col-span-2 space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Catégorie (ID)</label>
-              <Input
-                value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              />
-            </div>
-            <div className="md:col-span-2 flex gap-3">
-              <Button type="submit">
-                {editingId ? 'Enregistrer' : 'Créer'}
+            </Field>
+            <div className="flex gap-2 sm:col-span-2">
+              <Button type="submit" loading={saving}>
+                {editingId ? 'Enregistrer' : 'Créer le produit'}
               </Button>
-              <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>
+              <Button type="button" variant="tertiary" onClick={() => setShowForm(false)}>
                 Annuler
               </Button>
             </div>

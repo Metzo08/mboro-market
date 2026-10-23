@@ -10,7 +10,7 @@ import {
 import { SubscriptionsService } from './subscriptions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/index';
+import { Roles, CurrentUser } from '../../common/decorators/index';
 
 @Controller('subscriptions')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -24,8 +24,8 @@ export class SubscriptionsController {
   }
 
   @Get('shop/:shopId')
-  findByShop(@Param('shopId') shopId: string) {
-    return this.service.findByShop(shopId);
+  findByShop(@Param('shopId') shopId: string, @CurrentUser() user: any) {
+    return this.service.findByShop(shopId, user);
   }
 
   @Patch(':id/status')

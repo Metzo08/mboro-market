@@ -37,8 +37,8 @@ Thumbs.db
 coverage/
 .nyc_output/
 
-# Prisma
-prisma/migrations/*.sql
+# Prisma — les migrations sont versionnées (nécessaires au déploiement)
+# prisma/migrations/*.sql
 
 # TypeScript
 *.tsbuildinfo
