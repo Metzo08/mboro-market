@@ -39,6 +39,13 @@ Ce document trace ce qui a été **réellement implémenté**, ce qui reste **pa
 10. **OTP** : le numéro de téléphone est transmis entre connexion et vérification (le parcours était bloqué auparavant).
 11. **Rôles** : normalisation MAJUSCULES/minuscules (`RolesGuard`, services) — les routes commerçant ne renvoient plus 403 à tort.
 
+## 2 bis. Correctifs d'exécution locale
+
+- `NEXT_PUBLIC_API_URL` accepte désormais une URL absolue, une origine sans `/api`, ou `/api`.
+- `next.config.ts` proxifie `/api/:path*` vers NestJS : plus de 404 quand l'URL est relative.
+- `npm run dev` existe côté backend (alias de `start:dev`).
+- `sitemap.xml` est généré à la demande : plus de blocage du build si l'API est indisponible.
+
 ## 3. Limites assumées (à traiter avant production)
 
 - **Base de données** : aucune instance PostgreSQL disponible ici ; migrations/seed non exécutés. `npx prisma generate` et les builds passent.

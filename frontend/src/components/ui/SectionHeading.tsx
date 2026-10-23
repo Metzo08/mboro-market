@@ -13,7 +13,7 @@ export function SectionHeading({ title, eyebrow, href, linkLabel = 'Voir tout' }
     <div className="mb-5 flex items-end justify-between gap-4">
       <div>
         {eyebrow && (
-          <p className="text-caption font-semibold uppercase tracking-[0.14em] text-terracotta-dark">{eyebrow}</p>
+          <p className="inline-flex items-center gap-2 text-caption font-semibold uppercase tracking-[0.14em] text-terracotta-dark">{eyebrow}</p>
         )}
         <h2 className="text-h2 font-semibold text-ink">{title}</h2>
       </div>

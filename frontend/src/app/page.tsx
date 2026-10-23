@@ -15,6 +15,7 @@ import { fetchJson } from '@/lib/server';
 import { ShopCard } from '@/components/shop/ShopCard';
 import { ProductCard } from '@/components/product/ProductCard';
 import { SearchBar } from '@/components/search/SearchBar';
+import { HeroShowcase } from '@/components/home/HeroShowcase';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { buttonVariants } from '@/components/ui/Button';
@@ -36,14 +37,16 @@ interface PublicConfig {
 
 export default async function HomePage() {
   const [shopsData, productsData, categoriesData, config] = await Promise.all([
-    fetchJson<{ items: Shop[] }>('/shops?limit=6'),
-    fetchJson<{ items: Product[] }>('/products?limit=8'),
+    fetchJson<{ items: Shop[]; total: number }>('/shops?limit=6'),
+    fetchJson<{ items: Product[]; total: number }>('/products?limit=8'),
     fetchJson<Category[]>('/categories'),
     fetchJson<PublicConfig>('/config/public'),
   ]);
 
   const shops = shopsData?.items ?? [];
   const products = productsData?.items ?? [];
+  const shopsTotal = shopsData?.total ?? shops.length;
+  const productsTotal = productsData?.total ?? products.length;
   const categories = (categoriesData ?? []).slice(0, 8);
   const promos = products.filter(
     (product) =>
@@ -86,37 +89,64 @@ export default async function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
 
-      <section className="motif-bogolan border-b border-line bg-sand/70">
-        <div className="mx-auto max-w-4xl px-4 pb-10 pt-8 text-center sm:px-6 lg:pt-14">
-          <p className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-caption font-semibold uppercase tracking-[0.12em] text-teal">
-            <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-            Mboro · Thiès · Sénégal
-          </p>
-          <h1 className="mt-4 font-display text-[2.25rem] font-semibold leading-tight text-ink sm:text-5xl">
-            Les commerces et services de Thiès,
-            <span className="text-terracotta-dark"> à portée de main.</span>
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-body text-muted">
-            Trouvez ce qui est vendu près de chez vous, commandez en quelques clics et suivez votre
-            commande sans appeler.
-          </p>
-          <div className="mx-auto mt-6 max-w-2xl">
-            <SearchBar />
+      <section className="relative overflow-hidden border-b border-line bg-gradient-to-b from-sand/80 via-canvas to-canvas">
+        <div className="halo -left-24 top-0 h-72 w-72 bg-terracotta/25" />
+        <div className="halo right-0 top-10 h-80 w-80 bg-teal/20" />
+        <div className="halo bottom-0 left-1/3 h-64 w-64 bg-gold/25" />
+
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8 lg:pb-20 lg:pt-16">
+          <div className="reveal text-center lg:text-left">
+            <p className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/80 px-3 py-1 text-caption font-semibold uppercase tracking-[0.12em] text-teal shadow-card">
+              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+              Mboro · Thiès · Sénégal
+            </p>
+            <h1 className="mt-5 font-display text-[2.5rem] font-semibold leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-[3.4rem]">
+              Les commerces et services de Thiès,
+              <span className="block text-terracotta-dark">à portée de main.</span>
+            </h1>
+            <p className="mx-auto mt-4 max-w-xl text-body text-muted lg:mx-0">
+              Trouvez ce qui est vendu près de chez vous, commandez en quelques clics et suivez
+              votre commande sans appeler. Paiement à la livraison ou au retrait en boutique.
+            </p>
+
+            <div className="mx-auto mt-7 max-w-xl lg:mx-0">
+              <SearchBar />
+            </div>
+
+            <div className="mt-5 flex flex-wrap justify-center gap-2 lg:justify-start">
+              {QUICK_LINKS.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/90 px-3.5 py-2 text-small font-medium text-ink shadow-card transition-all hover:-translate-y-0.5 hover:border-terracotta hover:text-terracotta-dark"
+                  >
+                    <Icon className="h-4 w-4 text-terracotta" aria-hidden="true" />
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <dl className="mt-8 flex flex-wrap justify-center gap-6 lg:justify-start">
+              <div>
+                <dt className="text-caption uppercase tracking-wide text-muted">Boutiques en ligne</dt>
+                <dd className="numbers font-display text-2xl font-semibold text-ink">{shopsTotal}</dd>
+              </div>
+              <div className="border-l border-line pl-6">
+                <dt className="text-caption uppercase tracking-wide text-muted">Produits publiés</dt>
+                <dd className="numbers font-display text-2xl font-semibold text-ink">{productsTotal}</dd>
+              </div>
+              <div className="border-l border-line pl-6">
+                <dt className="text-caption uppercase tracking-wide text-muted">Paiement</dt>
+                <dd className="text-2xl font-semibold text-ink">à la livraison</dd>
+              </div>
+            </dl>
           </div>
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
-            {QUICK_LINKS.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 text-small font-medium text-ink shadow-card transition-colors hover:border-terracotta hover:text-terracotta-dark"
-                >
-                  <Icon className="h-4 w-4 text-terracotta" aria-hidden="true" />
-                  {link.label}
-                </Link>
-              );
-            })}
+
+          <div className="reveal reveal-delay-2 hidden lg:block">
+            <HeroShowcase shop={shops[0]} product={promos[0] ?? products[0]} />
           </div>
         </div>
       </section>
@@ -132,7 +162,7 @@ export default async function HomePage() {
                 <Link
                   key={category.id}
                   href={`/products?categoryId=${category.id}`}
-                  className="flex min-w-[6.5rem] flex-col items-center gap-2 rounded-lg border border-line bg-white px-4 py-3 text-center shadow-card transition-colors hover:border-teal hover:text-teal"
+                  className="flex min-w-[6.5rem] flex-col items-center gap-2 rounded-2xl border border-line bg-white px-4 py-3 text-center shadow-card lift hover:border-teal hover:text-teal"
                 >
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sand font-display text-lg font-semibold text-terracotta-dark">
                     {category.name.charAt(0)}

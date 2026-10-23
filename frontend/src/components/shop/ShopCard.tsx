@@ -7,7 +7,7 @@ import { OpenStatus } from '@/components/shop/OpenStatus';
 
 export function ShopCard({ shop, compact = false }: { shop: Shop; compact?: boolean }) {
   return (
-    <article className="group overflow-hidden rounded-lg border border-line bg-white shadow-card transition-shadow hover:shadow-raised">
+    <article className="group overflow-hidden rounded-2xl border border-line bg-white shadow-card lift">
       <Link href={`/shops/${shop.slug}`} className="block">
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-teal">
           {shop.settings && typeof shop.settings === 'object' && (shop.settings as any).bannerUrl ? (
@@ -15,7 +15,7 @@ export function ShopCard({ shop, compact = false }: { shop: Shop; compact?: bool
             <img
               src={(shop.settings as any).bannerUrl}
               alt={`Bannière de ${shop.name}`}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
               loading="lazy"
             />
           ) : (

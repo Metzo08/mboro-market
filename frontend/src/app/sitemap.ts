@@ -1,7 +1,12 @@
 import type { MetadataRoute } from 'next';
+import { resolveApiBase } from '@/lib/apiBase';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
+// Généré à la demande : aucun appel API bloquant au build.
+export const dynamic = 'force-dynamic';
+
+const API_URL = resolveApiBase();
 
 async function fetchAll<T>(path: string): Promise<T[]> {
   try {

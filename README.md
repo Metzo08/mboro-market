@@ -35,9 +35,20 @@ Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force
 Puis, dans deux terminaux séparés :
 
 ```powershell
-cd backend;  npm run start:dev     # http://localhost:3000/api
+cd backend;  npm run dev           # alias de start:dev → http://localhost:3000/api
 cd frontend; npm run dev           # http://localhost:3001
 ```
+
+### Si le frontend reçoit des 404 sur `/api/...`
+
+Cela signifie que `NEXT_PUBLIC_API_URL` est relatif (`/api`) et que Next.js répond lui-même.
+Deux protections sont en place :
+
+1. `resolveApiBase()` complète l'URL (ex. `http://localhost:3000` → `http://localhost:3000/api`).
+2. `next.config.ts` proxifie `/api/:path*` vers `http://localhost:3000` (ou `API_PROXY_TARGET`).
+
+Vérifie simplement que le **backend tourne sur 3000**, puis redémarre `npm run dev` après toute
+modification de `.env.local` (les variables `NEXT_PUBLIC_*` sont figées au démarrage).
 
 ## Installation
 

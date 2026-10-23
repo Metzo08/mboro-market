@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: '%s | JëndCiThiès',
   },
   description:
-    "Trouvez les commerçants, restaurants et artisans de Mboro, Thiès et sa région. Commandez en ligne, payez à la livraison ou par Wave / Orange Money.",
+    "Trouvez les commerçants, restaurants et artisans de Mboro, Thiès et sa région. Commandez en ligne et payez à la livraison ou au retrait en boutique.",
   applicationName: 'JëndCiThiès',
   openGraph: {
     title: 'JëndCiThiès — Une plateforme Sen-E-Carte',

@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
   const imageUrl = product.media?.[0]?.url || product.image;
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-lg border border-line bg-white shadow-card transition-shadow hover:shadow-raised">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card lift">
       <Link href={`/products/${product.slug}`} className="block">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-sand">
           {imageUrl ? (
@@ -23,7 +23,7 @@ export function ProductCard({ product }: { product: Product }) {
             <img
               src={imageUrl}
               alt={product.title}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
               loading="lazy"
             />
           ) : (

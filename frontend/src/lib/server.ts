@@ -1,4 +1,6 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+import { resolveApiBase } from '@/lib/apiBase';
+
+export const API_URL = resolveApiBase();
 
 interface FetchOptions {
   revalidate?: number;

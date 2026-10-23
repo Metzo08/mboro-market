@@ -171,7 +171,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </p>
             <p className="flex items-start gap-2">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden="true" />
-              Paiement à la livraison, Wave ou Orange Money. Aucun paiement n’est validé sans
+              Paiement à la livraison ou au retrait. Aucun paiement n’est validé sans
               confirmation du prestataire.
             </p>
           </div>
