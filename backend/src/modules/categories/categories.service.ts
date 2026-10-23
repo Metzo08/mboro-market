@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto, CreateCategoryFieldDto } from './dto';
+import { isAdminRole } from '../../common/auth/roles';
 
 @Injectable()
 export class CategoriesService {
@@ -13,7 +14,7 @@ export class CategoriesService {
 
   async create(dto: CreateCategoryDto, user: { id: string; role: string }) {
     // Les catégories globales (shopId null) sont réservées aux administrateurs.
-    if (!dto.shopId && !['admin', 'super_admin'].includes(user.role)) {
+    if (!dto.shopId && !isAdminRole(user.role)) {
       throw new ForbiddenException('Seul un administrateur peut créer une catégorie globale');
     }
     if (dto.shopId) await this.assertShopAccess(dto.shopId, user);
@@ -76,7 +77,7 @@ export class CategoriesService {
     if (!cat) {
       throw new NotFoundException('Catégorie introuvable');
     }
-    if (!cat.shopId && !['admin', 'super_admin'].includes(user.role)) {
+    if (!cat.shopId && !isAdminRole(user.role)) {
       throw new ForbiddenException('Catégorie globale non modifiable');
     }
     if (cat.shopId) await this.assertShopAccess(cat.shopId, user);
@@ -92,7 +93,7 @@ export class CategoriesService {
     if (!cat) {
       throw new NotFoundException('Catégorie introuvable');
     }
-    if (!cat.shopId && !['admin', 'super_admin'].includes(user.role)) {
+    if (!cat.shopId && !isAdminRole(user.role)) {
       throw new ForbiddenException('Catégorie globale non modifiable');
     }
     if (cat.shopId) await this.assertShopAccess(cat.shopId, user);
@@ -114,7 +115,7 @@ export class CategoriesService {
   }
 
   private async assertShopAccess(shopId: string, user: { id: string; role: string }) {
-    if (['admin', 'super_admin'].includes(user.role)) return;
+    if (isAdminRole(user.role)) return;
     const shop = await this.prisma.shop.findUnique({
       where: { id: shopId },
       select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },

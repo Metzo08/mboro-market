@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto, UpdateProductDto } from './dto';
+import { isAdminRole } from '../../common/auth/roles';
 
 @Injectable()
 export class ProductsService {
@@ -163,7 +164,7 @@ export class ProductsService {
   }
 
   private async assertCanManageShop(shopId: string, user: { id: string; role: string }) {
-    if (['admin', 'super_admin'].includes(user.role)) return;
+    if (isAdminRole(user.role)) return;
     const shop = await this.prisma.shop.findUnique({
       where: { id: shopId },
       select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },

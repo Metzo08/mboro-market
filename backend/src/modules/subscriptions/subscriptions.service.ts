@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { isAdminRole } from '../../common/auth/roles';
 
 @Injectable()
 export class SubscriptionsService {
@@ -21,7 +22,7 @@ export class SubscriptionsService {
   }
 
   async findByShop(shopId: string, user: { id: string; role: string }) {
-    if (!['admin', 'super_admin'].includes(user.role)) {
+    if (!isAdminRole(user.role)) {
       const shop = await this.prisma.shop.findUnique({
         where: { id: shopId },
         select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },

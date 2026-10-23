@@ -37,6 +37,7 @@ Ce document trace ce qui a été **réellement implémenté**, ce qui reste **pa
 8. **Paiement en ligne** : refuse explicitement au lieu de créer une fausse transaction réussie.
 9. **Fuite de données de démo** : suppression des boutiques fictives, des KPI de démo et des `shopId` codés en dur.
 10. **OTP** : le numéro de téléphone est transmis entre connexion et vérification (le parcours était bloqué auparavant).
+11. **Rôles** : normalisation MAJUSCULES/minuscules (`RolesGuard`, services) — les routes commerçant ne renvoient plus 403 à tort.
 
 ## 3. Limites assumées (à traiter avant production)
 

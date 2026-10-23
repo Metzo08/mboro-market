@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { isAdminRole } from '../../common/auth/roles';
 
 /**
  * Aucun prestataire de paiement n'est branché dans cette version : on refuse
@@ -139,7 +140,7 @@ export class PaymentsService {
     if (!shopId) {
       throw new BadRequestException('shopId est requis');
     }
-    if (!['admin', 'super_admin'].includes(user.role)) {
+    if (!isAdminRole(user.role)) {
       const shop = await this.prisma.shop.findUnique({
         where: { id: shopId },
         select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },

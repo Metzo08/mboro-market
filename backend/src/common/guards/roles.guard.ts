@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { normalizeRole } from '../auth/roles';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -16,7 +17,8 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     const user = context.switchToHttp().getRequest().user;
-    if (!user || !roles.includes((user as any).role)) {
+    const userRole = normalizeRole((user as any)?.role);
+    if (!user || !roles.map(normalizeRole).includes(userRole)) {
       throw new ForbiddenException('Accès refusé : rôle insuffisant');
     }
     return true;

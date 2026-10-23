@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateOrderDto, QuoteOrderDto, UpdateOrderStatusDto } from './dto';
+import { isAdminRole, isMerchantRole } from '../../common/auth/roles';
 
 /** Transitions autorisées et horodatées (§8.8 / ORD-010). */
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -226,7 +227,7 @@ export class OrdersService {
   }
 
   async findAll(user: { id: string; role: string }, shopId?: string) {
-    if (['admin', 'super_admin'].includes(user.role)) {
+    if (isAdminRole(user.role)) {
       return this.prisma.order.findMany({
         where: shopId ? { shopId } : undefined,
         include: { items: true, statusHistory: true, shop: { select: { name: true, slug: true } } },
@@ -234,7 +235,7 @@ export class OrdersService {
       });
     }
 
-    if (user.role === 'merchant') {
+    if (isMerchantRole(user.role)) {
       if (shopId) {
         await this.assertShopAccess(shopId, user);
         return this.prisma.order.findMany({
@@ -276,7 +277,7 @@ export class OrdersService {
       throw new NotFoundException('Commande introuvable');
     }
 
-    if (['admin', 'super_admin'].includes(user.role)) return order;
+    if (isAdminRole(user.role)) return order;
     if (order.userId === user.id) return order;
     await this.assertShopAccess(order.shopId, user);
     return order;
@@ -320,7 +321,7 @@ export class OrdersService {
   }
 
   private async assertShopAccess(shopId: string, user: { id: string; role: string }) {
-    if (['admin', 'super_admin'].includes(user.role)) return;
+    if (isAdminRole(user.role)) return;
     const shop = await this.prisma.shop.findUnique({
       where: { id: shopId },
       select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },

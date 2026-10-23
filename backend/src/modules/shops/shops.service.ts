@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateShopDto, UpdateShopDto } from './dto';
+import { isAdminRole } from '../../common/auth/roles';
 
 /** Champs réellement publics d'une boutique (§SHOP-006). */
 const PUBLIC_SHOP_INCLUDE = {
@@ -35,7 +36,7 @@ export class ShopsService {
       });
       const org = await this.prisma.organization.findUnique({ where: { id: organizationId } });
       const isOwner = org?.ownerId === user.id;
-      if (!membership && !isOwner && !['admin', 'super_admin'].includes(user.role)) {
+      if (!membership && !isOwner && !isAdminRole(user.role)) {
         throw new ForbiddenException("Vous n'appartenez pas à cette organisation");
       }
     } else {
@@ -143,7 +144,7 @@ export class ShopsService {
   async findMine(userId: string, role: string) {
     return this.prisma.shop.findMany({
       where:
-        role === 'admin' || role === 'super_admin'
+        isAdminRole(role)
           ? undefined
           : { OR: [{ ownerId: userId }, { members: { some: { userId } } }] },
       include: {
@@ -182,7 +183,7 @@ export class ShopsService {
   }
 
   async remove(id: string, user: { id: string; role: string }) {
-    if (!['admin', 'super_admin'].includes(user.role)) {
+    if (!isAdminRole(user.role)) {
       throw new ForbiddenException('Seul un administrateur peut supprimer une boutique');
     }
     return this.prisma.shop.delete({ where: { id } });
@@ -190,7 +191,7 @@ export class ShopsService {
 
   /** Autorisation serveur systématique : cacher un bouton ne protège rien (§6). */
   async assertCanManage(shopId: string, user: { id: string; role: string }) {
-    if (['admin', 'super_admin'].includes(user.role)) return;
+    if (isAdminRole(user.role)) return;
     const shop = await this.prisma.shop.findUnique({
       where: { id: shopId },
       select: { ownerId: true, members: { where: { userId: user.id }, select: { id: true } } },

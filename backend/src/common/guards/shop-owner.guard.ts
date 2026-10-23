@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
+import { isAdminRole } from '../auth/roles';
 
 @Injectable()
 export class ShopOwnerGuard implements CanActivate {
@@ -16,7 +17,7 @@ export class ShopOwnerGuard implements CanActivate {
       throw new ForbiddenException('Utilisateur non authentifié');
     }
 
-    if (user.role === 'super_admin' || user.role === 'admin') {
+    if (isAdminRole(user.role)) {
       return true;
     }
 
