@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreateSettingDto } from './dto';
 
 @Injectable()
 export class AdminService {
@@ -12,7 +13,7 @@ export class AdminService {
     });
   }
 
-  async createSetting(dto: any) {
+  async createSetting(dto: CreateSettingDto) {
     return this.prisma.setting.create({
       data: {
         scope: dto.scope ?? 'global',

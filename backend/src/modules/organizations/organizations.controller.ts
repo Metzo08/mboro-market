@@ -21,7 +21,7 @@ export class OrganizationsController {
   constructor(private service: OrganizationsService) {}
 
   @Post()
-  @Roles('super_admin', 'admin')
+  @Roles('SUPER_ADMIN', 'ADMIN')
   create(@Body() dto: CreateOrganizationDto) {
     return this.service.create(dto);
   }
@@ -37,13 +37,13 @@ export class OrganizationsController {
   }
 
   @Patch(':id')
-  @Roles('super_admin', 'admin')
+  @Roles('SUPER_ADMIN', 'ADMIN')
   update(@Param('id') id: string, @Body() dto: UpdateOrganizationDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
-  @Roles('super_admin')
+  @Roles('SUPER_ADMIN')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

@@ -22,7 +22,7 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin', 'admin', 'merchant')
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
   create(@Body() dto: CreateProductDto) {
     return this.service.create(dto);
   }
@@ -34,8 +34,10 @@ export class ProductsController {
     @Query('categoryId') categoryId?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 20,
+    @Query('q') q?: string,
+    @Query('slug') slug?: string,
   ) {
-    return this.service.findAll(shopId, categoryId, +page, +limit);
+    return this.service.findAll(shopId, categoryId, +page, +limit, q, slug);
   }
 
   @Public()
@@ -46,14 +48,14 @@ export class ProductsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin', 'admin', 'merchant')
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
   update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin', 'admin', 'merchant')
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

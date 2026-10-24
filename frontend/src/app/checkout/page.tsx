@@ -13,6 +13,7 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<any>(null);
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'wave' | 'paydunya' | 'cod' | 'pickup'>('wave');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -123,19 +124,40 @@ export default function CheckoutPage() {
         userId: user.id,
         shopId: items[0].product.shopId,
         items: orderItems,
-        deliveryAddress: address,
+        deliveryAddress: { text: address, phone },
         customerNote: '',
+        idempotencyKey: `CK-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        paymentMethod: paymentMethod === 'wave' || paymentMethod === 'paydunya' ? 'ONLINE' : paymentMethod === 'pickup' ? 'PICKUP' : 'CASH_ON_DELIVERY',
       });
 
       setOrderId(orderRes.data.id);
 
+      // CDC §10 : en ligne (Wave/PayDunya) → initialize + redirection ; livraison/retrait → succès direct
+      if (paymentMethod === 'pickup' || paymentMethod === 'cod') {
+        clear();
+        setSuccess(true);
+        return;
+      }
+
       const payRes = await api.post('/payments/initialize', {
         orderId: orderRes.data.id,
-        provider: 'paydunya',
+        provider: paymentMethod === 'wave' ? 'wave' : 'paydunya',
         paymentMethod: 'ONLINE',
+        phone,
       });
 
-      setPaymentUrl(payRes.data.checkout_url || `https://sandbox.paydunya.com/checkout/${payRes.data.reference}`);
+      // Le backend renvoie checkoutUrl ; fallback sandbox si provider non configuré
+      const url =
+        payRes.data.checkoutUrl ||
+        payRes.data.checkout_url ||
+        null;
+      if (url) {
+        setPaymentUrl(url);
+      } else {
+        // Mode sandbox : la commande est créée, le paiement se confirme via webhook
+        clear();
+        setSuccess(true);
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erreur lors de la création de la commande');
     } finally {
@@ -171,6 +193,30 @@ export default function CheckoutPage() {
                   required
                 />
               </div>
+            </div>
+
+            <h3 className="text-lg font-bold text-gray-900 mt-8">Moyen de paiement</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { v: 'wave', t: 'Wave', d: 'Paiement mobile instantané' },
+                { v: 'paydunya', t: 'PayDunya', d: 'Carte / Mobile Money' },
+                { v: 'cod', t: 'À la livraison', d: 'Espèces à la réception' },
+                { v: 'pickup', t: 'Retrait boutique', d: 'Payez sur place' },
+              ].map((m: any) => (
+                <button
+                  key={m.v}
+                  type="button"
+                  onClick={() => setPaymentMethod(m.v)}
+                  className={`p-4 rounded-lg border text-left transition-colors ${
+                    paymentMethod === m.v
+                      ? 'border-green-700 bg-green-50 ring-1 ring-green-700'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <p className="font-semibold text-gray-900">{m.t}</p>
+                  <p className="text-xs text-gray-500">{m.d}</p>
+                </button>
+              ))}
             </div>
 
             <h3 className="text-lg font-bold text-gray-900 mt-8">Récapitulatif</h3>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { removeToken } from '@/lib/api';
-import { LayoutDashboard, ShoppingCart, Package, CreditCard, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, CreditCard, LogOut, User, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/merchant/products', label: 'Produits', icon: ShoppingCart },
   { href: '/merchant/orders', label: 'Commandes', icon: Package },
   { href: '/merchant/payments', label: 'Paiements', icon: CreditCard },
+  { href: '/merchant/settings', label: 'Paramètres', icon: Settings },
 ];
 
 export default function MerchantLayout({

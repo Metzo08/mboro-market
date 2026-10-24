@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
+import { CreateSubscriptionDto, UpdateSubscriptionStatusDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/index';
@@ -18,8 +19,8 @@ export class SubscriptionsController {
   constructor(private service: SubscriptionsService) {}
 
   @Post()
-  @Roles('super_admin', 'admin')
-  create(@Body() dto: any) {
+  @Roles('SUPER_ADMIN', 'ADMIN')
+  create(@Body() dto: CreateSubscriptionDto) {
     return this.service.create(dto);
   }
 
@@ -28,9 +29,14 @@ export class SubscriptionsController {
     return this.service.findByShop(shopId);
   }
 
+  @Get('pricing')
+  getPricing() {
+    return this.service.getPricingPublic();
+  }
+
   @Patch(':id/status')
-  @Roles('super_admin', 'admin')
-  updateStatus(@Param('id') id: string, @Body() dto: any) {
+  @Roles('SUPER_ADMIN', 'ADMIN')
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateSubscriptionStatusDto) {
     return this.service.updateStatus(id, dto);
   }
 }

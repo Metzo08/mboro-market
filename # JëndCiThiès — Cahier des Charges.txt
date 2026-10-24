@@ -1,0 +1,837 @@
+# JëndCiThiès — Cahier des Charges v2.0
+### Plateforme SaaS de commerce local — Région de Thiès, Sénégal
+**Édité par Sen-E-Carte** | Version 2.0 — Enrichie (Design System, Wireframes, Direction Artistique)
+
+> Cette version condense et réorganise le cahier des charges v1.0 pour le rendre plus actionnable, tout en ajoutant une **identité visuelle complète**, un **design system**, et des **wireframes détaillés** des écrans clés. Les exigences `OBLIGATOIRE` restent au cœur du MVP ; les éléments `PHASE 2+` sont indiqués.
+
+---
+
+## Sommaire
+
+1. [Vision & Positionnement](#1-vision--positionnement)
+2. [Identité de marque & Direction artistique](#2-identité-de-marque--direction-artistique)
+3. [Design System](#3-design-system)
+4. [Wireframes des écrans clés](#4-wireframes-des-écrans-clés)
+5. [Modèle économique](#5-modèle-économique)
+6. [Utilisateurs, comptes & permissions](#6-utilisateurs-comptes--permissions)
+7. [Parcours utilisateurs](#7-parcours-utilisateurs)
+8. [Spécifications fonctionnelles](#8-spécifications-fonctionnelles)
+9. [Assistant IA français–wolof](#9-assistant-ia-françaiswolof)
+10. [Paiements, livraison, remboursements](#10-paiements-livraison-remboursements)
+11. [SEO & acquisition locale](#11-seo--acquisition-locale)
+12. [Architecture technique](#12-architecture-technique)
+13. [Modèle de données](#13-modèle-de-données)
+14. [Sécurité & conformité](#14-sécurité--conformité)
+15. [Performance & accessibilité](#15-performance--accessibilité)
+16. [API, webhooks, intégrations](#16-api-webhooks-intégrations)
+17. [Administration Sen-E-Carte](#17-administration-sen-e-carte)
+18. [Tests & critères d'acceptation](#18-tests--critères-dacceptation)
+19. [Phasage de réalisation](#19-phasage-de-réalisation)
+20. [Livrables & définition du terminé](#20-livrables--définition-du-terminé)
+21. [Prompt maître IA développeuse](#21-prompt-maître-ia-développeuse)
+22. [Sources & checklist pré-lancement](#22-sources--checklist-pré-lancement)
+
+---
+
+## 1. Vision & Positionnement
+
+### 1.1 Pitch
+**JëndCiThiès** connecte les commerçants, restaurateurs, artisans et prestataires de Mboro, Thiès et de leur région à leurs clients, via une vitrine en ligne professionnelle, un moteur de recherche local, des commandes en ligne et un assistant IA bilingue français–wolof.
+
+| Pour qui | Promesse |
+|---|---|
+| **Commerçant** | « Je crée ma boutique en 10 minutes, je suis visible sur Google, je reçois des commandes, un assistant IA m'aide même si je ne suis pas informaticien. » |
+| **Client** | « Je trouve ce qui est vendu près de moi, je commande en 3 clics, je suis ma commande sans appeler. » |
+| **Sen-E-Carte** | Réseau de boutiques abonnées, SaaS mesurable et évolutif à l'échelle nationale. |
+
+### 1.2 Principes non négociables
+
+- **Rien en dur** : prix, commissions, catégories, zones, textes, langues, moyens de paiement → tout configurable en base, jamais codé en dur.
+- **Mobile-first & résilient** : connexions instables, écrans modestes, utilisateurs peu experts.
+- **Multi-tenant strict** : isolation totale des données entre boutiques, contrôlée côté serveur.
+- **IA fondée sur les données réelles** : jamais d'invention de prix, stock ou avis.
+- **SEO par construction** : rendu indexable, pas un "plugin" ajouté après coup.
+- **Design = confiance** : une identité visuelle soignée est un facteur de conversion et de crédibilité pour des commerçants qui n'ont souvent jamais eu de présence professionnelle en ligne.
+
+### 1.3 Périmètre MVP vs Phase 2+
+
+| MVP (Obligatoire) | Phase 2+ |
+|---|---|
+| Vitrines boutiques indexables, catalogue, recherche | App mobile native iOS/Android |
+| Commande mono-boutique, paiement en ligne + à la livraison | Panier multi-vendeurs |
+| Assistant IA texte FR/Wolof | Assistant vocal wolof |
+| Abonnement SaaS (activation + mensuel) | Commission transactionnelle, publicité sponsorisée |
+| SEO technique complet | Livraison intégrée avec affectation auto + preuve photo |
+| Back-office Sen-E-Carte complet | Programme fidélité/parrainage avancé, domaines personnalisés |
+
+---
+
+## 2. Identité de marque & Direction artistique
+
+### 2.1 Nom & architecture de marque
+
+- **Marque produit** : JëndCiThiès *(nom de travail — à valider : domaine, réseaux sociaux, dépôt de marque)*
+- **Éditeur** : Sen-E-Carte — signature : *« Une plateforme Sen-E-Carte »*
+- **Slogan** : *« Les commerces et services de Thiès, à portée de main »*
+- **Marque boutique** : chaque commerçant garde son identité (logo, couleurs, ton) dans un cadre cohérent avec la plateforme.
+
+### 2.2 Direction artistique — concept
+
+> **« Chaleur du marché, clarté du digital »** — L'inspiration visuelle puise dans les marchés colorés de Thiès et Mboro (teintes terre cuite, bogolan, wax), tout en gardant une interface épurée, lisible et rassurante comme un outil professionnel moderne.
+
+**Mots-clés de la DA** : chaleureux · digne · accessible · dynamique · local · fiable · moderne (pas "gadget", pas "corporate froid").
+
+**Ce qu'on évite** : design générique de template e-commerce occidental, bleu corporate froid sans âme, iconographie clipart, photos stock non-africaines.
+
+**Ce qu'on recherche** : palette inspirée du couchant sur la Petite Côte, motifs géométriques discrets inspirés du tissu wax en arrière-plans/séparateurs, photographie réelle des commerçants et produits locaux, typographie ronde et accueillante.
+
+### 2.3 Palette de couleurs
+
+| Rôle | Couleur | Hex | Usage |
+|---|---|---|---|
+| **Primaire — Terracotta** | 🟧 Orange brûlé | `#E8632C` | CTA principaux, liens actifs, accents de marque |
+| **Primaire foncé** | 🟫 Terracotta foncé | `#B6481A` | Hover, états actifs, texte sur fond clair |
+| **Secondaire — Teal profond** | 🟦 Bleu-vert Atlantique | `#115E59` | Navigation, en-têtes, éléments de confiance |
+| **Secondaire clair** | 🟦 Teal clair | `#14B8A6` | Badges "vérifié", succès secondaire |
+| **Accent — Or wax** | 🟨 Jaune ambré | `#F2A93B` | Promotions, étoiles/notes, highlights |
+| **Succès** | 🟩 Vert Sénégal | `#2E8B57` | Confirmations, statuts positifs, "ouvert" |
+| **Alerte** | 🟥 Rouge brique | `#C9432D` | Erreurs, "fermé", stock épuisé |
+| **Fond principal** | ⬜ Blanc cassé chaud | `#FFFBF5` | Fond général (pas de blanc pur, plus chaleureux) |
+| **Fond secondaire** | ⬜ Sable clair | `#F5EDE1` | Cartes, sections alternées |
+| **Texte principal** | ⬛ Anthracite chaud | `#2B2420` | Texte principal (pas de noir pur) |
+| **Texte secondaire** | ⬛ Gris chaud | `#6B625A` | Sous-titres, métadonnées |
+| **Bordures** | ▫️ Gris sable | `#E2D6C4` | Séparateurs, contours de champs |
+
+> **Accessibilité** : tous les couples texte/fond doivent respecter un contraste WCAG AA (≥4.5:1). Le terracotta `#E8632C` sur blanc cassé passe le test pour les textes ≥18px/gras ; utiliser `#B6481A` pour le texte standard.
+
+**Motif de marque** : un motif géométrique discret inspiré des losanges du bogolan/wax, utilisé en filigrane à faible opacité (5-8%) sur les en-têtes de section, écrans de chargement, et pages d'erreur — jamais sur les zones de lecture dense.
+
+### 2.4 Typographie
+
+| Usage | Police recommandée | Caractéristiques |
+|---|---|---|
+| **Titres (H1-H3)** | **Poppins** (SemiBold/Bold) ou **Clash Display** | Géométrique, ronde, chaleureuse, forte présence mobile |
+| **Corps de texte / UI** | **Inter** ou **Work Sans** (Regular/Medium) | Excellente lisibilité FR + diacritiques wolof (ë, ñ), optimisée petits écrans |
+| **Prix / chiffres** | Inter avec chiffres tabulaires | Alignement propre dans tableaux et prix |
+| **Wolof / accents spéciaux** | Vérifier le support complet des caractères ŋ, ñ, ë dans la police choisie | Obligatoire avant sélection finale |
+
+**Échelle typographique (mobile-first, en rem)** :
+
+```
+H1  2.0rem / 32px  — Poppins SemiBold — titres de page
+H2  1.5rem / 24px  — Poppins SemiBold — sections
+H3  1.25rem / 20px — Poppins Medium  — sous-sections / cartes
+Body 1rem / 16px   — Inter Regular   — texte courant
+Small 0.875rem/14px— Inter Regular   — métadonnées, légendes
+Caption 0.75rem/12px— Inter Medium   — badges, labels
+```
+
+### 2.5 Iconographie & imagerie
+
+- **Icônes** : style *outline* arrondi (ex. Phosphor Icons ou Lucide), cohérent avec la typographie ronde. Pas d'icônes trop techniques/abstraites — privilégier des pictogrammes immédiatement compréhensibles (panier, moto-livreur, assiette, marteau, téléphone).
+- **Photographie** : priorité aux photos réelles des commerçants (boutique, plats, réalisations). Prévoir un **kit photo gratuit** (guide + exemples) pour aider les commerçants à bien photographier leurs produits avec un simple smartphone.
+- **Illustrations d'appoint** (états vides, onboarding) : style plat, chaleureux, représentant des scènes locales authentiques (marché, moto Jakarta, étals) — à produire sur-mesure, pas de stock générique.
+- **Emoji drapeaux/motifs** à éviter dans l'UI finale (réservés aux documents internes).
+
+### 2.6 Composants visuels signature
+
+| Composant | Description |
+|---|---|
+| **Carte boutique** | Coin arrondi 16px, ombre douce, bannière photo 16:9, logo en médaillon qui chevauche la bannière (style "carte de visite augmentée") |
+| **Badge de confiance** | Pastille teal avec icône check, texte court ("Vérifiée", "Ouvert maintenant") |
+| **Bouton CTA principal** | Fond terracotta, coins arrondis 12px, ombre légère, icône + texte, état pressed avec léger scale-down |
+| **Barre de recherche héro** | Large, coins très arrondis (pill shape), icône loupe + localisation, ombre portée prononcée pour flotter au-dessus du fond |
+| **Tags de catégorie** | Pills colorées avec icône, couleur de fond dérivée de la catégorie (ex. alimentation = vert clair, services = teal clair) |
+
+---
+
+## 3. Design System
+
+### 3.1 Tokens de base
+
+```yaml
+spacing: [4, 8, 12, 16, 24, 32, 48, 64]   # px, échelle 4/8pt
+radius:
+  sm: 8px      # inputs, petits éléments
+  md: 12px     # boutons, cartes produit
+  lg: 16px     # cartes boutique, modales
+  pill: 999px  # barre recherche, badges
+shadow:
+  sm: 0 1px 2px rgba(43,36,32,0.06)
+  md: 0 4px 12px rgba(43,36,32,0.08)
+  lg: 0 8px 24px rgba(43,36,32,0.12)
+breakpoints:
+  mobile: 0–639px      # cible prioritaire (70%+ du trafic attendu)
+  tablet: 640–1023px
+  desktop: 1024px+
+grid: 4 colonnes mobile / 8 tablette / 12 desktop, gouttière 16px
+```
+
+### 3.2 Composants UI prioritaires à concevoir
+
+| Composant | États à prévoir |
+|---|---|
+| Bouton (primaire, secondaire, tertiaire, danger) | défaut, hover, pressed, désactivé, chargement |
+| Champ de formulaire | vide, focus, rempli, erreur, désactivé |
+| Carte produit | avec/sans stock, avec/sans promo, image manquante |
+| Carte boutique | vérifiée/non, ouverte/fermée, avec badge "nouveau" |
+| Badge de statut commande | reçu, accepté, en préparation, prêt, livré, annulé (couleurs distinctes) |
+| Barre de progression commande | stepper horizontal mobile-friendly |
+| Modale de confirmation | action risquée (prix, suppression, envoi) |
+| Toast/notification | succès, erreur, info, avec auto-dismiss |
+| Skeleton loader | pour listes produits, fiche boutique, dashboard |
+| État vide | illustration + message + CTA (ex. "Aucun produit — ajoutez-en un") |
+
+### 3.3 Design tokens — mode sombre (Phase 2)
+
+Prévoir dès l'architecture CSS (variables/tokens) la possibilité d'un mode sombre, sans l'implémenter au lancement : structurer les couleurs en tokens sémantiques (`color-bg-primary`, `color-text-primary`) plutôt qu'en valeurs codées en dur dans les composants.
+
+---
+
+## 4. Wireframes des écrans clés
+
+> Wireframes textuels structurés — à transformer en maquettes haute-fidélité (Figma) avant développement. Mobile-first (375px), déclinaison desktop en légende.
+
+### 4.1 Page d'accueil (public)
+
+```
+┌─────────────────────────────────────┐
+│ [☰]  JëndCiThiès          [🔔][👤]  │  ← Header sticky, fond blanc cassé
+├─────────────────────────────────────┤
+│                                       │
+│   📍 Mboro, Thiès ▾                   │  ← Sélecteur de localité (pill)
+│   ┌───────────────────────────────┐ │
+│   │ 🔍  Rechercher un produit,     │ │  ← Barre recherche héro (pill, ombre)
+│   │     une boutique, un service…  │ │
+│   └───────────────────────────────┘ │
+│                                       │
+│   [🍽 Repas] [🔧 Artisan] [🛒 Acheter] │  ← Raccourcis rapides (pills icône+texte)
+│   [📋 Devis]                          │
+│                                       │
+│ ── Catégories populaires ──────────  │
+│   (icônes rondes scrollables H)      │
+│   🥖 🧱 💇 🔌 👗 🐟 🚗 …              │
+│                                       │
+│ ── Près de chez vous ─────────────   │
+│  ┌─────────────┐ ┌─────────────┐    │
+│  │ [photo 16:9]│ │ [photo 16:9]│    │  ← Cartes boutique (scroll horizontal)
+│  │ 🏪 Nom       │ │ 🏪 Nom       │    │
+│  │ ⭐4.6 • 2km   │ │ ⭐4.2 • 1km   │    │
+│  │ ✅ Ouvert     │ │ 🔴 Fermé     │    │
+│  └─────────────┘ └─────────────┘    │
+│                                       │
+│ ── Offres du moment ──────────────   │  ← Section promos (étiquetées "Sponsorisé" si payant)
+│   [Bannière carrousel]                │
+│                                       │
+│ ── Restaurants & fast-foods ──────    │
+│   (grille 2 colonnes mobile)         │
+│                                       │
+│ ── Artisans & services ───────────    │
+│   (grille 2 colonnes mobile)         │
+│                                       │
+├─────────────────────────────────────┤
+│ [🏠 Accueil][🔍 Rech.][🛒 Panier]     │  ← Tab bar mobile sticky bottom
+│ [💬 IA][👤 Compte]                     │
+└─────────────────────────────────────┘
+```
+
+**Desktop** : barre recherche + localité centrées en hero avec image de fond (marché/scène locale), catégories en grille 6 colonnes, sections boutiques en grille 4 colonnes, pas de tab bar (navigation header classique + footer complet).
+
+**Comportements clés** : états vide/chargement/erreur sur chaque section horizontale (skeleton loaders) — cf. PUB-008.
+
+---
+
+### 4.2 Fiche boutique publique
+
+```
+┌─────────────────────────────────────┐
+│ [←]                        [⤴ Partager]│
+├─────────────────────────────────────┤
+│  [■■■■■■■■■■■■■■■■■■■■■■■■■■■■]     │  ← Bannière photo pleine largeur
+│         ┌────┐                       │
+│         │Logo│  ← médaillon chevauchant la bannière
+│         └────┘                       │
+│  Dibiterie Chez Mame Diarra          │  ← H1
+│  🥩 Restauration • Mboro             │
+│  ✅ Vérifiée   ✅ Ouvert maintenant    │  ← Badges
+│  ⭐ 4.6 (128 avis)                    │
+│                                       │
+│  [📞 Appeler] [💬 WhatsApp] [🧭 Itinéraire] │ ← Boutons d'action rapide
+│                                       │
+│ ┌─[Menu]─[Avis]─[Infos]─[FAQ]───────┐ │  ← Onglets horizontaux sticky
+│ └─────────────────────────────────┘ │
+│                                       │
+│  🔎 Rechercher dans le menu…          │
+│                                       │
+│  — Grillades —                        │
+│  ┌─────────────────────────────┐    │
+│  │[img] Dibi mouton   2 500 F  │ [+]│  ← Ligne produit avec ajout rapide
+│  │      🔥 Populaire             │    │
+│  └─────────────────────────────┘    │
+│  ┌─────────────────────────────┐    │
+│  │[img] Dibi poulet    2 000 F │ [+]│
+│  └─────────────────────────────┘    │
+│                                       │
+│  — Infos pratiques —                  │
+│  🕐 Lun-Dim : 18h-00h                 │
+│  📍 Près du marché central, Mboro     │
+│  🚚 Livraison 500F • Retrait gratuit  │
+│  💳 Espèces, Wave, Orange Money       │
+│                                       │
+├─────────────────────────────────────┤
+│ [🛒 Voir le panier (3) — 6 500 F]     │  ← Barre panier flottante sticky bottom
+└─────────────────────────────────────┘
+```
+
+**Points obligatoires** (cf. SHOP-002/003/005/006) : statut ouvert/fermé dynamique, badges vérifiables uniquement, bouton WhatsApp/appel configuré, zone desservie visible, aperçu avant publication côté commerçant.
+
+---
+
+### 4.3 Tableau de bord commerçant (mobile)
+
+```
+┌─────────────────────────────────────┐
+│ ☰  Ma boutique ▾            [👤]     │
+├─────────────────────────────────────┤
+│  Bonjour Mame Diarra 👋               │
+│  ┌─────────────────────────────┐    │
+│  │ ⚠️ 3 nouvelles commandes      │    │  ← Carte alerte prioritaire (terracotta)
+│  │ [Voir les commandes →]        │    │
+│  └─────────────────────────────┘    │
+│                                       │
+│  ┌──────────┐ ┌──────────┐          │
+│  │ 42 500 F │ │ 12       │          │  ← KPI cards (2 colonnes)
+│  │ CA 7j    │ │ Commandes│          │
+│  └──────────┘ └──────────┘          │
+│  ┌──────────┐ ┌──────────┐          │
+│  │ Abonnement│ │ 3 produits│          │
+│  │ ✅ À jour  │ │ en rupture│          │
+│  │ (12j)     │ │           │          │
+│  └──────────┘ └──────────┘          │
+│                                       │
+│  ── Actions suggérées (IA) ──────    │
+│  💡 Complétez la photo du "Dibi      │
+│     poulet" pour +30% de clics       │
+│     [Ajouter une photo]              │
+│                                       │
+│  💡 Heure d'ouverture du dimanche     │
+│     manquante                        │
+│     [Compléter]                      │
+│                                       │
+│  ── Commandes récentes ───────────    │
+│  ● #0231 • En préparation • 3 500F   │
+│  ● #0230 • Livré • 2 000F            │
+│                                       │
+├─────────────────────────────────────┤
+│[📊 Accueil][📦 Cmd][🛍 Catalogue]     │
+│[💬 IA][⚙️ Réglages]                   │
+└─────────────────────────────────────┘
+```
+
+**Panneau Assistant IA (slide-over ou onglet dédié)** :
+```
+┌─────────────────────────────────────┐
+│ 💬 Assistant IA        [FR|Wolof] [×]│
+├─────────────────────────────────────┤
+│  🤖 Bonjour ! Je peux t'aider à      │
+│     créer une fiche produit,         │
+│     résumer tes ventes ou traduire   │
+│     un message. Que veux-tu faire ?  │
+│                                       │
+│  [Créer un produit] [Résumer ventes] │
+│  [Traduire en wolof] [Aide boutique] │
+│                                       │
+│  > Dafa am 3 kilo ceeb ci stock bi,  │
+│    génère une annonce                │
+│                                       │
+│  🤖 Voici un brouillon (à valider) : │
+│  ┌─────────────────────────────┐    │
+│  │ Titre : Ceeb u Jën fraîche   │    │
+│  │ Prix : [à compléter]          │    │
+│  │ [Modifier] [Publier]          │    │
+│  └─────────────────────────────┘    │
+├─────────────────────────────────────┤
+│ [Écrire un message…]          [➤]    │
+└─────────────────────────────────────┘
+```
+
+> Toute action d'écriture (ex. "Publier") passe par un bouton de confirmation explicite — jamais d'action automatique silencieuse (cf. IA-010, garde-fous §9.5).
+
+---
+
+### 4.4 Panier & Checkout (client)
+
+```
+ÉTAPE 1 — Panier
+┌─────────────────────────────────────┐
+│ [←] Mon panier                       │
+├─────────────────────────────────────┤
+│  Dibiterie Chez Mame Diarra           │
+│  ┌─────────────────────────────┐    │
+│  │[img] Dibi mouton             │    │
+│  │      2 500 F   [-] 2 [+]  🗑️ │    │
+│  └─────────────────────────────┘    │
+│                                       │
+│  Sous-total          5 000 F         │
+│  Livraison          À calculer       │
+│                                       │
+│  [Code promo ▾]                       │
+│                                       │
+│  [    Continuer vers la livraison →] │  ← CTA pleine largeur, terracotta
+└─────────────────────────────────────┘
+
+ÉTAPE 2 — Livraison
+┌─────────────────────────────────────┐
+│ [←] Livraison ou retrait             │
+├─────────────────────────────────────┤
+│  ○ 🏍 Livraison à domicile            │
+│  ● 🏪 Retrait en boutique (gratuit)   │
+│                                       │
+│  [Si livraison sélectionnée :]       │
+│  Quartier/Village *                   │
+│  [Sélectionner ▾]                     │
+│  Repère (ex: près du marché) *        │
+│  [________________________]          │
+│  Téléphone *                          │
+│  [________________________]          │
+│  Instructions (facultatif)            │
+│  [________________________]          │
+│                                       │
+│  [    Continuer vers le paiement →]  │
+└─────────────────────────────────────┘
+
+ÉTAPE 3 — Paiement
+┌─────────────────────────────────────┐
+│ [←] Paiement                         │
+├─────────────────────────────────────┤
+│  Récapitulatif                        │
+│  Dibi mouton x2         5 000 F      │
+│  Retrait                 Gratuit     │
+│  ─────────────────────────────       │
+│  Total                  5 000 F      │
+│                                       │
+│  Mode de paiement                     │
+│  ○ 💵 Paiement à la livraison/retrait │
+│  ○ 📱 Wave                            │
+│  ○ 📱 Orange Money                    │
+│                                       │
+│  ☐ J'accepte les conditions de vente │
+│                                       │
+│  [      Confirmer la commande  ]     │  ← État : défaut → chargement → succès
+└─────────────────────────────────────┘
+
+ÉTAPE 4 — Confirmation
+┌─────────────────────────────────────┐
+│         ✅ (grande icône succès)      │
+│     Commande #0231 confirmée !       │
+│                                       │
+│  La boutique a été notifiée.         │
+│  Temps estimé : 25-35 min            │
+│                                       │
+│  [    Suivre ma commande      ]      │
+│  [    Retour à l'accueil      ]      │
+└─────────────────────────────────────┘
+```
+
+**Règles critiques intégrées au flow** (cf. §8, ORD-003/006/007) : total recalculé serveur à chaque étape, détection stock/indisponibilité avant l'étape paiement, clé d'idempotence sur le bouton "Confirmer", état de chargement bloquant le double-clic, jamais de confirmation optimiste côté client seul.
+
+---
+
+## 5. Modèle économique
+
+| Élément | Valeur par défaut (configurable) |
+|---|---|
+| Frais d'activation | 5 000 FCFA / boutique, une fois |
+| Abonnement | 2 500 FCFA / boutique / mois |
+| Commission sur ventes | 0% au lancement, activable plus tard |
+| Devise | FCFA/XOF, format localisé |
+
+**Règle d'or** : aucun montant codé en dur. Montant, devise, période, taxes, tolérance de retard, période de grâce → tous modifiables en back-office sans redéploiement.
+
+**Cycle de vie abonnement** : `pending_activation → active → past_due → grace_period → suspended → cancelled/expired/refunded`
+
+**Séparation stricte des flux** :
+- Flux 1 — Abonnements Sen-E-Carte (facturation SaaS)
+- Flux 2 — Paiements clients → vendeurs (commandes)
+→ Comptes, factures et rapprochements distincts. Jamais de confusion entre revenu commandé et revenu encaissé (dashboard).
+
+**Multi-boutiques** : un compte commerçant peut gérer plusieurs boutiques, chacune avec son propre abonnement, ses permissions, son catalogue — sans fuite croisée de droits.
+
+---
+
+## 6. Utilisateurs, comptes & permissions
+
+| Rôle | Périmètre |
+|---|---|
+| Visiteur public | Recherche, consultation, partage, contact |
+| Client inscrit | Profil, commandes, avis vérifiés |
+| Propriétaire boutique | Catalogue, commandes, équipe, facturation, IA |
+| Gérant/employé | Accès limité à sa(ses) boutique(s) et fonctions accordées |
+| Préparateur (resto) | Vue cuisine, statuts de préparation uniquement |
+| Livreur partenaire *(Phase 2)* | Missions assignées, preuve de livraison |
+| Support Sen-E-Carte | Accès journalisé, limité, pas d'action financière sans permission |
+| Modérateur | Signalements, contenus, suspension motivée |
+| Administrateur | Config opérationnelle, territoires, catégories, plans |
+| Super-admin | Secrets, permissions admin, audit global |
+
+**Règle d'or sécurité** : principe du moindre privilège + contrôle d'autorisation **côté serveur systématique**. Cacher un bouton côté client n'est jamais une protection valide.
+
+**Inscription** : téléphone en priorité, OTP/SMS avec anti-abus, vérification vendeur graduelle (`non vérifié → en revue → vérifié/rejeté`), pièces justificatives jamais exposées publiquement.
+
+---
+
+## 7. Parcours utilisateurs
+
+### 7.1 Commerçant
+`Créer compte → vérifier téléphone → choisir activité (taxonomie configurable) → formulaire dynamique selon activité → infos boutique → choisir options (vente/service/RDV/devis/livraison) → paiement activation → boutique en brouillon/vérification/en ligne → IA aide à la 1ère fiche → réception commandes`
+
+### 7.2 Client — achat produit
+`Arrivée (Google/WhatsApp/accueil) → recherche → fiche produit → panier → adresse locale (quartier/repère) → total calculé serveur → choix paiement → confirmation → suivi statut`
+
+### 7.3 Client — restaurant/fast-food
+`Fiche resto (ouvert/fermé) → choix plats/options → validation contraintes serveur → livraison/retrait → acceptation resto + délai estimé → suivi (reçu→préparation→prêt→livré)`
+
+### 7.4 Client — artisan/service
+`Recherche prestataire zone → profil (réalisations, avis, zone) → mode (prix fixe/devis/RDV) → description besoin + photos → réponse pro + devis → acceptation → confirmation post-prestation + avis vérifié`
+
+---
+
+## 8. Spécifications fonctionnelles
+
+> Les identifiants (PUB-xxx, CAT-xxx…) sont conservés pour la traçabilité tickets/tests. Contenu condensé par domaine — se référer à la v1.0 pour le détail exhaustif si besoin d'arbitrage fin.
+
+### 8.1 Site public & accueil
+`PUB-001→008` : Accueil mobile-first avec recherche visible ; localisation choisie (jamais imposée par géoloc forcée) ; catégories configurables ; mise en avant payante toujours étiquetée comme telle ; pages légales/aide/contact ; partage avec Open Graph ; gestion des états vide/chargement/erreur sur toutes les listes.
+
+### 8.2 Catégories & champs dynamiques
+`CAT-001→007` : Catégories/sous-catégories 100% administrables (CRUD, ordre, SEO). Schéma de champs par catégorie (type, validation, obligatoire, filtre) sans `if/else` codé par catégorie dans le front. Unités configurables (pièce, kg, litre, heure…).
+
+### 8.3 Boutique publique
+`SHOP-001→008` : Slug unique + URL lisible. Fiche complète (logo, horaires, zone, moyens de paiement). Sections modulables selon type d'activité. Thèmes/couleurs personnalisables sans injection de code. Badges vérifiables uniquement. Gestion SEO des boutiques suspendues/expirées (pas de redirection trompeuse).
+
+### 8.4 Catalogue produits
+`PROD-001→009` : CRUD complet + duplication + variantes (taille/couleur/stock propre). Produits sur commande/précommande/épuisés. Import/export CSV avec rapport d'erreurs. Prix stockés en valeur numérique fiable (jamais en chaîne formatée). Historique des changements prix/stock.
+
+### 8.5 Restaurants & fast-foods
+`REST-001→009` : Menu avec variantes/suppléments/options obligatoires validées **côté serveur** (jamais confiance au total navigateur). Acceptation auto/manuelle, max commandes/créneau. Vue cuisine gros boutons tactiles. Allergènes enregistrés si fournis — IA n'invente jamais de garantie "sans allergène".
+
+### 8.6 Artisans & services
+`SERV-001→007` : Modes multiples (prix fixe/devis/RDV/acompte). Workflow devis avec historique. Gestion créneaux + temps tampon. Transparence sur "devis nécessaire" quand le prix dépend d'un diagnostic.
+
+### 8.7 Recherche & découverte
+`SRCH-001→006` : Recherche tolérante aux fautes/accents, synonymes FR/Wolof configurables. Filtres riches par catégorie. Classement explicable/configurable (pas de tri uniquement par capacité à payer). Anti-duplication de pages de recherche indexées sans contenu unique.
+
+### 8.8 Panier, commande
+`ORD-001→010` : Commande = copie immuable des prix/lignes au moment de l'achat. Recalcul serveur systématique. Commande invité possible. Idempotence anti-double-soumission. Transitions de statut autorisées et horodatées.
+
+### 8.9 Comptes clients & CRM
+`CRM-001→005` : Profil, adresses avec alias, consentements granulaires (pas de case marketing précochée), avis liés à une commande vérifiée, étanchéité stricte entre commerçants.
+
+### 8.10 Promotions
+`PROMO-001→005` : Coupons paramétrables, offres temporaires avec historique de prix honnête, mises en avant étiquetées, QR code/lien de partage généré, envoi massif désactivé par défaut (opt-in strict).
+
+### 8.11 Tableau de bord commerçant
+`DASH-001→005` : Vue priorisée (commandes, alertes, échéance abonnement), KPIs avec période/source affichées, distinction stricte commandé vs encaissé, export CSV, ergonomie mobile.
+
+### 8.12 Notifications
+`NOTIF-001→005` : Canaux configurables (in-app, email, SMS, WhatsApp si dispo), déclencheurs configurables, modèles traduits, historique avec statut, centre de notifications in-app indépendant des canaux externes.
+
+### 8.13 Confiance & modération
+`TRUST-001→006` : Badge "vérifiée" contrôlé réellement, avis liés aux commandes vérifiées, file de signalement avec motifs normalisés, IA signale mais ne bannit jamais seule sans recours humain.
+
+---
+
+## 9. Assistant IA français–wolof
+
+### 9.1 Positionnement
+Copilote de vente et de gestion intégré à l'espace commerçant — pas un simple chatbot. Agit via des **outils serveur typés et journalisés**, jamais via accès direct base de données.
+
+### 9.2 Cas d'usage obligatoires (MVP)
+
+| ID | Fonction |
+|---|---|
+| IA-001 | Création de fiche produit à partir d'une description orale/écrite |
+| IA-002 | Suggestion de description à partir d'une photo (vérification humaine obligatoire) |
+| IA-003 | Propositions SEO (titre, méta-description, FAQ) — jamais de bourrage de mots-clés |
+| IA-004 | Traduction/reformulation FR ↔ Wolof en préservant montants et unités |
+| IA-005/006 | Réponses sur stock, prix, horaires, commandes — strictement à partir des données réelles |
+| IA-007 | Génération de publication marketing (confirmation avant envoi) |
+| IA-008 | Onboarding guidé du nouveau commerçant |
+| IA-009/010 | Recommandations proactives + actions en brouillon avec confirmation obligatoire |
+
+### 9.3 Garde-fous non négociables
+
+- Jamais d'invention de stock, prix, disponibilité, avis ou statut de paiement.
+- Confirmation du statut de paiement **uniquement** via le prestataire ou validation humaine — jamais via capture d'écran/texte.
+- Aucune fuite de données inter-boutiques, prompts système ou secrets.
+- Toute action impactant argent/prix/publication/remboursement → confirmation explicite + permission vérifiée.
+- Mode dégradé : le reste de la plateforme fonctionne si l'IA est indisponible.
+- Tests obligatoires : qualité FR/Wolof avec locuteurs réels, prompt injection, fuite inter-tenant.
+
+### 9.4 Architecture
+Couche d'abstraction multi-fournisseur · prompts versionnés côté serveur · RAG filtré strictement par tenant · pas d'entraînement sur données clients par défaut · logs avec masquage des données sensibles.
+
+---
+
+## 10. Paiements, livraison, remboursements
+
+### 10.1 Principe financier
+Flux Sen-E-Carte (abonnements) et flux vendeurs (ventes) **toujours séparés**. Avant tout encaissement pour compte de tiers, valider contractuellement le modèle avec le prestataire (compte marchand direct, agrégation sous-comptes, ou parcours contrôlé).
+
+### 10.2 Architecture paiement
+- Interface `PaymentProvider` commune, une implémentation par prestataire.
+- Secrets exclusivement côté serveur/vault — jamais dans le navigateur, l'app ou Git.
+- Confirmation de paiement **uniquement** via webhook/vérification serveur authentifiée — jamais via retour navigateur seul.
+- Statuts normalisés : `created, pending, succeeded, failed, cancelled, refunded, under_review…`
+- Idempotence stricte sur les webhooks.
+
+### 10.3 Prestataires à valider contractuellement
+PayDunya (Orange Money, Wave, Free Money, cartes…) · Wave Business (Checkout, webhooks, réconciliation) · Orange Money Business — **KYC, tarification et capacités multi-vendeurs à confirmer directement avant intégration.**
+
+### 10.4 Livraison adaptée au contexte local
+Hiérarchie éditable : `région > département > commune > quartier/village > repère`. Pas d'adresse numérotée obligatoire — champs "près de…", repères (marché, mosquée, école). Modes : vendeur, livreur partenaire *(Phase 2)*, retrait, non livrable. Si calcul automatique incertain → afficher "à confirmer par le vendeur", jamais de montant fictif.
+
+### 10.5 Remboursements & litiges
+Politique distincte par type (produit/repas/service/abonnement). Jamais de statut "remboursé" avant confirmation effective. Dossier de litige tracé (chronologie, preuves, décisions).
+
+---
+
+## 11. SEO & acquisition locale
+
+### 11.1 Stratégie par niveau
+Plateforme · Territoire (Mboro, Thiès…) · Catégorie+Territoire (« plombiers à Mboro ») · Boutique · Produit · Service · Restaurant · Éditorial — **chaque page doit avoir un contenu réellement unique**, pas de génération automatique de pages vides.
+
+### 11.2 Exigences techniques non négociables
+- Rendu SSR/SSG pour toutes les pages publiques stratégiques (pas de coquille vide côté client).
+- URLs propres et stables, redirection 301 en cas de changement de slug.
+- Sitemap XML auto-généré (segmenté par type), robots.txt propre, canonicals cohérents.
+- Codes HTTP corrects (200/301/404/410/503 — jamais de faux 200).
+- Données structurées Schema.org (`LocalBusiness`, `Product`, `Restaurant`, `Offer`, `Review`…) **uniquement si les données sont réelles et valides**.
+- Seuil configurable d'offres réelles avant d'indexer une page locale (anti pages vides).
+
+### 11.3 Mesure
+Google Search Console + analytics, indicateurs : pages indexées, CTR organique, clics appel/WhatsApp, commandes issues du SEO.
+
+---
+
+## 12. Architecture technique
+
+### 12.1 Principes
+SaaS multi-tenant à séparation stricte · API documentée et validée serveur · tâches asynchrones (emails, images, IA, sitemap) · observabilité complète · déploiements automatisés avec migrations traçables.
+
+### 12.2 Pile indicative *(proposition, à justifier par l'équipe technique)*
+
+| Couche | Choix proposé |
+|---|---|
+| Front-end | Next.js/React (SSR pour le SEO) |
+| Back-end | NestJS/TypeScript ou Laravel/PHP — un seul chemin cohérent |
+| Base de données | PostgreSQL |
+| Cache/files | Redis |
+| Recherche | PostgreSQL → Meilisearch/OpenSearch si volume |
+| Fichiers | Stockage objet compatible S3 + CDN |
+| API | REST + OpenAPI |
+
+### 12.3 Modules applicatifs
+Identité/permissions · Organisations/boutiques/abonnements · Taxonomie/territoires · Catalogue · Recherche · Commandes/devis/RDV · Paiements · Livraison · Notifications · Assistant IA · SEO/sitemap · Avis/modération · Analytique · Administration/audit · Connecteurs externes.
+
+### 12.4 Multi-tenant — règles critiques
+- `tenant_id`/`shop_id` dérivé de la session serveur, **jamais** d'un paramètre client.
+- Tests d'isolation obligatoires sur lecture, écriture, recherche, export, IA, cache, tâches async.
+- Caches et index de recherche cloisonnés par tenant.
+
+### 12.5 Secrets & environnements
+`.env.example` sans valeur réelle · aucun secret dans Git · feature flags pour déploiement progressif · sauvegardes chiffrées avec test de restauration régulier.
+
+---
+
+## 13. Modèle de données
+
+*(Conceptuel — noms de tables adaptables, relations/contraintes à préserver)*
+
+**Entités cœur** : `users, organizations, organization_members, shops, shop_members, plans, subscriptions, invoices, payments, payment_events`
+
+**Catalogue & territoires** : `categories, category_fields, locations, products, product_variants, media_assets, services, menus/menu_items`
+
+**Transactions** : `carts/cart_items, orders/order_items, order_status_history, addresses, delivery_zones, delivery_tasks, quotes, appointments`
+
+**Confiance & système** : `reviews, promotions/coupons, notifications, ai_conversations/ai_messages, ai_action_logs, audit_logs, settings, translations, feature_flags`
+
+### Règles d'intégrité clés
+- Transactions atomiques (commande + stock + paiement).
+- Copie immuable des prix au moment de la commande.
+- Contraintes d'unicité en base (pas uniquement front-end).
+- Montants en unités monétaires entières (FCFA sans sous-unité), dates en UTC → affichage Africa/Dakar.
+- Attributs dynamiques : conception validée (JSONB typé/validé ou table hybride) — jamais de JSON libre non structuré.
+
+---
+
+## 14. Sécurité & conformité
+
+> Exigences produit/ingénierie — validation juridique indispensable avant production (voir §22).
+
+### 14.1 Sécurité applicative
+Hash de mots de passe moderne · MFA recommandé admins · protection OWASP (injection, XSS, CSRF, SSRF, brute force) · rate limiting (OTP, login, checkout, IA, webhooks) · erreurs publiques sans fuite d'info · revue de code + scan de secrets automatisé.
+
+### 14.2 Confidentialité
+Cartographie des données collectées · minimisation (téléphone suffit, email facultatif) · consentements granulaires · procédure de demande d'effacement/correction · données sensibles jamais transmises à un fournisseur IA sans nécessité et base légale · **vérification CDP Sénégal (loi n°2008-12)** indispensable.
+
+### 14.3 Commerce électronique
+À faire valider juridiquement avant lancement : CGU, CGV, politique de remboursement/livraison, politique de confidentialité, mentions légales, procédure de réclamation. Responsabilités vendeur/plateforme clairement expliquées — badges décrivant précisément le contrôle réellement effectué.
+
+---
+
+## 15. Performance & accessibilité
+
+### 15.1 Cibles de performance (à confirmer par mesure réelle)
+
+| Métrique | Cible |
+|---|---|
+| LCP | ≤ 2,5s |
+| INP | ≤ 200ms |
+| CLS | ≤ 0,1 |
+| API p95 | ≤ 500ms (hors appels externes) |
+
+### 15.2 Accessibilité
+Viser **WCAG 2.2 AA** sur les parcours essentiels : contraste (cf. palette §2.3), navigation clavier, focus visible, textes alternatifs, lecteurs d'écran, jamais de sens transmis uniquement par la couleur.
+
+### 15.3 Résilience
+Checkout fonctionnel sur connexion mobile moyenne · jamais de page blanche silencieuse · timeouts/retries contrôlés sur IA et paiements · PWA envisageable sans stockage offline de données sensibles.
+
+---
+
+## 16. API, webhooks, intégrations
+
+**Groupes d'API indicatifs** : `/auth /organizations /shops /categories /locations /products /services /menus /search /carts /orders /quotes /appointments /payments /subscriptions /delivery /reviews /notifications /ai /admin /webhooks/{provider}`
+
+**Webhooks** : validation signature, idempotence stricte, vérification montant/devise/statut/bénéficiaire, journal consultable et rejouable par l'admin, aucune action arbitraire déclenchable par un simple identifiant de boutique fourni en entrée.
+
+**Intégrations par adaptateurs** : paiement, SMS, email, WhatsApp, stockage, géocodage, IA, recherche, livraison — interface commune permettant le remplacement sans réécriture métier.
+
+---
+
+## 17. Administration Sen-E-Carte
+
+| Domaine | Fonctions back-office |
+|---|---|
+| Paramètres généraux | Identité plateforme, langues, territoires actifs, tarification, textes, feature flags |
+| Boutiques | Recherche/filtre, validation, suspension motivée, gestion gérants |
+| Catégories/localités | CRUD complet sans redéploiement, traduction, SEO, historique |
+| Finances | Factures, impayés, remboursements, rapprochement, séparation visuelle des 2 flux de revenus |
+| Modération/support | File de signalements priorisée, historique de décisions, accès support journalisé et révocable |
+| Tableau de bord plateforme | Utilisateurs actifs, taux d'activation, MRR, taux d'échec paiement, coûts IA |
+
+---
+
+## 18. Tests & critères d'acceptation
+
+> Chaque case doit être validée automatiquement et/ou en recette humaine — ni une capture d'écran, ni une compilation réussie ne suffisent.
+
+**Isolation multi-tenant** ☐ Vendeur A ne peut jamais accéder aux données du vendeur B (URL manipulée, export, IA, recherche, tâches async)
+
+**Catalogue** ☐ Ajout de catégorie sans code ☐ Formulaire dynamique fonctionnel ☐ Import avec rapport d'erreurs
+
+**Commandes/finance** ☐ Total recalculé serveur ☐ Pas de double-commande (idempotence) ☐ Paiement jamais confirmé côté client seul ☐ Webhook falsifié rejeté
+
+**Assistant IA** ☐ Dit "donnée manquante" plutôt que d'inventer ☐ N'accède qu'à sa boutique ☐ Confirmation requise pour actions risquées ☐ Tests FR/Wolof réalistes
+
+**SEO** ☐ HTML initial avec contenu utile ☐ Canonicals cohérents ☐ Pages privées hors sitemap ☐ Pas de pages locales vides
+
+**UX/Performance** ☐ Parcours majeur fonctionnel sur petit écran ☐ États d'attente/erreur/succès visibles ☐ Navigation clavier sur pages essentielles
+
+**Facturation** ☐ Changement de prix sans redéploiement ☐ Facturation d'activation unique ☐ Impayé → rappels/transitions définis, jamais de suppression de données imprévue
+
+---
+
+## 19. Phasage de réalisation
+
+| Phase | Contenu | Livrable |
+|---|---|---|
+| **0 — Cadrage** | Validation nom/tarifs/modèle paiement/territoires/politiques | Architecture, backlog, maquettes Figma (basées sur §2-4) |
+| **1 — Socle SaaS** | Auth, organisations, boutiques, permissions, catégories dynamiques, facturation activation | Commerçant crée une boutique en brouillon sécurisée |
+| **2 — Marketplace publique** | Accueil, recherche, fiches SEO SSR, sitemap, données structurées | Boutiques/produits publiés et indexables |
+| **3 — Commandes & paiement** | Panier, checkout, intégration sandbox, webhooks, rapprochement | Parcours de commande complet testé avant mise en prod |
+| **4 — IA bilingue** | Outils IA contrôlés, console, corpus de tests Wolof/FR | Assistant texte opérationnel avec confirmations |
+| **5 — Pilote local** | Test avec commerçants réels (Mboro/Thiès, diversité de métiers) | Corrections UX/SEO/paiement avant extension |
+| **6 — Croissance** | Panier multi-vendeurs, livraison intégrée, fidélité, vocal wolof | Extension nationale |
+
+---
+
+## 20. Livrables & définition du terminé
+
+### Livrables exigés
+Code source + README + architecture · `.env.example` sans secret · migrations + données démo séparées · tests (unitaires/intégration/E2E/isolation) · documentation API/OpenAPI · documentation déploiement/sauvegarde/incident · **maquettes Figma haute-fidélité basées sur le Design System (§2-3)** · rapport de recette SEO/perf/accessibilité/sécurité.
+
+### Interdictions strictes
+Pas de paiement simulé présenté comme réel · pas de bouton inactif sans avertissement · pas de données démo confondues avec du réel · pas de secret en dur · pas de "SEO terminé" sur simple présence de balises · pas de "wolof supporté" sans tests réels.
+
+### Définition du "terminé"
+Fonctionnel + testé + permissions respectées + erreurs gérées + mobile-friendly + **conforme au Design System** + documenté + sans dépendance à des données fictives non signalées.
+
+---
+
+## 21. Prompt maître IA développeuse
+
+```
+RÔLE : Architecte logiciel senior + designer produit, spécialiste SaaS multi-tenant, 
+e-commerce, paiements, SEO technique, sécurité et IA conversationnelle FR-Wolof.
+
+MISSION : Concevoir et coder JëndCiThiès by Sen-E-Carte selon ce cahier des charges 
+v2.0, EN RESPECTANT STRICTEMENT le Design System (§2-3) et les wireframes (§4) fournis.
+
+PRINCIPES ABSOLUS :
+1. Vrai SaaS multi-tenant, isolation stricte des données par boutique.
+2. Rien en dur : prix, catégories, territoires, textes, paiements → configurables.
+3. Jamais de secret exposé côté client ou dans Git.
+4. Jamais de simulation présentée comme réelle (paiement, SMS, IA, livraison).
+5. Totaux/stocks/statuts financiers validés côté serveur uniquement.
+6. Toute page publique stratégique rendue SSR/SSG, indexable, avec données structurées valides.
+7. IA fondée sur données réelles, jamais d'invention, confirmation avant action risquée.
+8. Mobile-first, résilient aux connexions moyennes, adapté aux pratiques sénégalaises.
+9. Séparation stricte abonnements Sen-E-Carte / paiements vendeurs.
+10. Application rigoureuse de la palette, typographie et composants du Design System §2-3 
+    — pas d'improvisation visuelle, pas de template générique.
+
+MÉTHODE :
+- Inspecter l'existant avant de coder.
+- Livrer d'abord un plan technique + maquettes conformes au Design System.
+- Développement vertical (DB→API→UI) par fonctionnalité complète, phase par phase (§19).
+- Tests systématiques après chaque phase (migrations, lint, unit, intégration, E2E, isolation tenant).
+- Journal des exigences : statut + preuve de test pour chaque item.
+- Documentation honnête : fonctionnel / simulé-test / non terminé.
+
+PRIORITÉS : 
+P0 = sécurité, multi-tenant, auth/rôles, boutique publique indexable, catalogue, 
+     commandes, paiement vérifié, facturation SaaS, Design System appliqué.
+P1 = restaurants, devis/RDV, notifications, IA textuelle, dashboard complet.
+P2 = vocal wolof, panier multi-vendeurs, livraison automatisée, fidélité.
+
+Commencer par : plan d'exécution + architecture + maquettes des 4 écrans clés (§4), 
+puis fondations du dépôt.
+```
+
+---
+
+## 22. Sources & checklist pré-lancement
+
+### Sources de référence
+- Google Search Central — [SEO e-commerce](https://developers.google.com/search/docs/specialty/ecommerce?hl=fr) & [données structurées](https://developers.google.com/search/docs/specialty/ecommerce/include-structured-data-relevant-to-ecommerce?hl=fr)
+- PayDunya — [documentation API](https://developers.paydunya.com/doc/FR/softpay)
+- Wave Business — [documentation API](https://docs.wave.com/business)
+- CDP Sénégal — [textes législatifs](https://www.cdp.sn/legislation/textes-legislatifs)
+
+### Checklist avant mise en production
+
+- [ ] Nom, domaine, marque vérifiés juridiquement
+- [ ] Tarification validée par Sen-E-Carte (5 000 + 2 500 FCFA)
+- [ ] Modèle de paiement vendeur validé par écrit avec le prestataire
+- [ ] CGU/CGV/politique de confidentialité relues juridiquement
+- [ ] **Maquettes Figma validées conformes au Design System §2-3**
+- [ ] Test sandbox paiement réussi (webhook, doublons, échecs)
+- [ ] Formalités CDP vérifiées
+- [ ] Jeu de tests Wolof/Français réalisé avec locuteurs natifs
+- [ ] Commerçants pilotes identifiés à Mboro/Thiès
+- [ ] Rapport d'audit accessibilité/performance/sécurité livré
+
+---
+
+*Fin du cahier des charges v2.0 — Sen-E-Carte*

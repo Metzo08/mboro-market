@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { formatPrice } from '@/lib/utils';
 import { Shop } from '@/types';
+import { shopImage } from '@/lib/images';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -50,8 +52,14 @@ export default async function ShopsPage() {
                   }),
                 }}
               />
-              <div className="h-48 bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-400 text-sm">{shop.name}</span>
+              <div className="h-48 relative overflow-hidden bg-gray-100">
+                <Image
+                  src={shopImage(shop)}
+                  alt={shop.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover"
+                />
               </div>
               <div className="p-4">
                 <Link href={`/shops/${shop.slug}`} className="block">

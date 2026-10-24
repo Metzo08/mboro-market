@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { DeliveryService } from './delivery.service';
+import { DeliveryZoneDto, DeliveryTaskDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/index';
@@ -18,8 +19,8 @@ export class DeliveryController {
   constructor(private service: DeliveryService) {}
 
   @Post('zones')
-  @Roles('super_admin', 'admin', 'merchant')
-  createZone(@Body() dto: any) {
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
+  createZone(@Body() dto: DeliveryZoneDto) {
     return this.service.createZone(dto);
   }
 
@@ -29,8 +30,8 @@ export class DeliveryController {
   }
 
   @Post('tasks')
-  @Roles('super_admin', 'admin', 'merchant')
-  createTask(@Body() dto: any) {
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
+  createTask(@Body() dto: DeliveryTaskDto) {
     return this.service.createTask(dto);
   }
 }

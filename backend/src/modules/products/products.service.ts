@@ -45,16 +45,35 @@ export class ProductsService {
     });
   }
 
-  async findAll(shopId?: string, categoryId?: string, page: number = 1, limit: number = 20) {
+  async findAll(shopId?: string, categoryId?: string, page: number = 1, limit: number = 20, q?: string, slug?: string) {
+    const where: any = { status: 'active' };
+    if (shopId) where.shopId = shopId;
+    if (slug) where.slug = slug;
+    if (categoryId) {
+      // Accepte ID ou slug de catégorie
+      const cat = await this.prisma.category.findFirst({
+        where: { OR: [{ id: categoryId }, { slug: categoryId }] },
+        select: { id: true },
+      });
+      if (cat) where.categoryId = cat.id;
+      else where.categoryId = categoryId;
+    }
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { shortDescription: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+      ];
+    }
     const [items, total] = await this.prisma.$transaction([
       this.prisma.product.findMany({
-        where: { shopId, categoryId, status: 'active' },
+        where,
         skip: (page - 1) * limit,
         take: limit,
         include: { variants: true, category: true, media: true },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.product.count({ where: { shopId, categoryId, status: 'active' } }),
+      this.prisma.product.count({ where }),
     ]);
     return { items, total, page, limit };
   }

@@ -16,7 +16,7 @@ export class ShopOwnerGuard implements CanActivate {
       throw new ForbiddenException('Utilisateur non authentifié');
     }
 
-    if (user.role === 'super_admin' || user.role === 'admin') {
+    if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
       return true;
     }
 

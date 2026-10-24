@@ -75,22 +75,30 @@ export class AuthService {
     };
   }
 
-  async register(data: { phone: string; email?: string; role?: string }) {
+  async register(data: { phone: string; email?: string; password?: string; firstName?: string; lastName?: string; role?: string }) {
     const existing = await this.prisma.user.findUnique({ where: { phone: data.phone } });
     if (existing) {
       throw new ConflictException('Ce numéro de téléphone est déjà utilisé');
+    }
+    const raw = (data.role || 'CUSTOMER').toUpperCase();
+    const role = raw === 'MERCHANT' ? 'MERCHANT' : 'CUSTOMER';
+
+    let passwordHash: string | undefined;
+    if (data.password) {
+      passwordHash = await bcrypt.hash(data.password, 10);
     }
 
     const user = await this.prisma.user.create({
       data: {
         phone: data.phone,
         email: data.email,
-        role: (data.role || 'CUSTOMER') as any,
-        status: 'PENDING_VERIFICATION',
+        passwordHash,
+        role: role as any,
+        status: data.password ? 'ACTIVE' : 'PENDING_VERIFICATION',
       },
     });
 
-    return { message: 'Compte créé, vérifiez votre téléphone', userId: user.id };
+    return { message: 'Compte créé', userId: user.id };
   }
 
   async validateUser(phone: string, pass: string): Promise<any> {
@@ -104,6 +112,32 @@ export class AuthService {
     }
     const { passwordHash, ...result } = user;
     return result;
+  }
+
+  async loginWithEmail(email: string, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user || !user.passwordHash) {
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
+    }
+    const match = await bcrypt.compare(password, user.passwordHash);
+    if (!match) {
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
+    }
+    const token = this.jwt.sign({
+      sub: user.id,
+      phone: user.phone,
+      role: user.role as any,
+    });
+    return {
+      access_token: token,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+      },
+    };
   }
 
   async generateTokens(user: any) {

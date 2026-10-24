@@ -22,7 +22,7 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin', 'admin', 'merchant')
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
   create(@Body() dto: CreateCategoryDto) {
     return this.service.create(dto);
   }
@@ -41,21 +41,21 @@ export class CategoriesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin', 'admin', 'merchant')
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
   update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin', 'admin')
+  @Roles('SUPER_ADMIN', 'ADMIN')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
 
   @Post(':id/fields')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super_admin', 'admin', 'merchant')
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
   addField(@Param('id') id: string, @Body() dto: CreateCategoryFieldDto) {
     return this.service.addField(id, dto);
   }

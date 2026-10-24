@@ -12,7 +12,8 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from '../../common/decorators/index';
 import { CurrentUser } from '../../common/decorators/index';
-import { LoginDto, VerifyOtpDto, RegisterDto } from './dto';
+import { LoginDto, VerifyOtpDto, RegisterDto, LoginWithEmailDto } from './dto';
+
 
 @Controller('auth')
 export class AuthController {
@@ -34,6 +35,12 @@ export class AuthController {
   @Post('register')
   async register(@Body() dto: RegisterDto) {
     return this.auth.register(dto);
+  }
+
+  @Public()
+  @Post('login/password')
+  async loginPassword(@Body() dto: LoginWithEmailDto) {
+    return this.auth.loginWithEmail(dto.email, dto.password);
   }
 
   @UseGuards(JwtAuthGuard)

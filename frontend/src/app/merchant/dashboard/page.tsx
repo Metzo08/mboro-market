@@ -1,5 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { api, getToken } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
@@ -10,15 +12,27 @@ export default function MerchantDashboard() {
     totalRevenue: 0,
     pendingOrders: 0,
   });
+  const [shop, setShop] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Charger les données depuis l'API
-    Promise.all([
-      api.get('/products').catch(() => ({ data: { items: [] } })),
-      api.get('/orders').catch(() => ({ data: { items: [] } })),
-    ])
-      .then(([productsRes, ordersRes]) => {
+    const loadShopAndStats = async () => {
+      const token = getToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const shopRes = await api.get(`/shops/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setShop(shopRes.data);
+        const shopId = shopRes.data.id;
+
+        const [productsRes, ordersRes] = await Promise.all([
+          api.get('/products', { params: { shopId } }).catch(() => ({ data: { items: [] } })),
+          api.get('/orders', { params: { shopId } }).catch(() => ({ data: { items: [] } })),
+        ]);
         const products = productsRes.data.items || [];
         const orders = ordersRes.data.items || [];
         const revenue = orders.reduce(
@@ -31,17 +45,18 @@ export default function MerchantDashboard() {
           totalRevenue: revenue,
           pendingOrders: orders.filter((o: any) => o.status === 'PENDING').length,
         });
-      })
-      .catch(() => {
-        // Données de démo en cas d'erreur
+      } catch (err: any) {
         setStats({
-          totalProducts: 3,
+          totalProducts: 0,
           totalOrders: 0,
           totalRevenue: 0,
           pendingOrders: 0,
         });
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadShopAndStats();
   }, []);
 
   if (loading) {

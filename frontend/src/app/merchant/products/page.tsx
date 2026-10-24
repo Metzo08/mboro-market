@@ -3,7 +3,7 @@
 import { api, getToken, removeToken } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -13,6 +13,7 @@ import { Product } from '@/types';
 export default function MerchantProducts() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
+  const [shop, setShop] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -27,29 +28,47 @@ export default function MerchantProducts() {
     categoryId: '',
   });
 
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/login?callback=/merchant/products');
-      return;
-    }
-    loadProducts();
-  }, [router]);
-
-  const loadProducts = async () => {
+  const loadShop = async () => {
     try {
-      const res = await api.get('/products');
-      setProducts(res.data.items || res.data || []);
+      const token = getToken();
+      if (!token) {
+        router.push('/login?callback=/merchant/products');
+        return;
+      }
+      const meRes = await api.get('/auth/me');
+      const userId = meRes.data.user.id;
+      const shopRes = await api.get(`/shops/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setShop(shopRes.data);
+      loadProducts(shopRes.data.id);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors du chargement');
+      setError(err.response?.data?.message || 'Erreur lors du chargement de la boutique');
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadShop();
+  }, [router]);
+
+  const loadProducts = async (shopId?: string) => {
+    try {
+      const res = await api.get('/products', { params: { shopId } });
+      setProducts(res.data.items || res.data || []);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Erreur lors du chargement des produits');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (!shop) {
+        setError('Boutique non trouvée');
+        return;
+      }
       if (editingId) {
         await api.patch(`/products/${editingId}`, {
           title: formData.title,
@@ -67,14 +86,14 @@ export default function MerchantProducts() {
           description: formData.description,
           price: Number(formData.price),
           stock: Number(formData.stock),
-          shopId: '8e0b526e-e8d1-455f-8eac-245f0d4aa84c', // ID de la boutique démo
+          shopId: shop.id,
           categoryId: formData.categoryId || undefined,
         });
       }
       setShowForm(false);
       setEditingId(null);
       setFormData({ title: '', slug: '', shortDescription: '', description: '', price: '', stock: '', categoryId: '' });
-      loadProducts();
+      loadProducts(shop.id);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erreur lors de l\'enregistrement');
     }

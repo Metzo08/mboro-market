@@ -17,6 +17,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getResponse()
         : { message: 'Erreur serveur interne' };
 
+    // En developpement, on journalise la cause reelle pour faciliter le
+    // diagnostic (le message renvoye au client reste generique).
+    if (!(exception instanceof HttpException)) {
+      console.error('[HTTP Exception]', exception);
+    }
+
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),

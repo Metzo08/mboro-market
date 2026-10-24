@@ -8,24 +8,33 @@ import { Badge } from '@/components/ui/Badge';
 
 export default function MerchantOrders() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [shop, setShop] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      window.location.href = `/login?callback=/merchant/orders`;
-      return;
-    }
-    api.get('/orders', { params: { shopId: '8e0b526e-e8d1-455f-8eac-245f0d4aa84c' } })
-      .then((res) => {
-        setOrders(res.data.items || res.data || []);
-        setLoading(false);
-      })
-      .catch((err: any) => {
+    const loadShopAndOrders = async () => {
+      const token = getToken();
+      if (!token) {
+        window.location.href = `/login?callback=/merchant/orders`;
+        return;
+      }
+      try {
+        const meRes = await api.get('/auth/me');
+        const userId = meRes.data.user.id;
+        const shopRes = await api.get(`/shops/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setShop(shopRes.data);
+        const ordersRes = await api.get('/orders', { params: { shopId: shopRes.data.id } });
+        setOrders(ordersRes.data.items || ordersRes.data || []);
+      } catch (err: any) {
         setError(err.response?.data?.message || 'Erreur lors du chargement');
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    loadShopAndOrders();
   }, []);
 
   if (!getToken()) {

@@ -2,26 +2,55 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, ShoppingCart, User } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, ShoppingCart, User, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartProvider';
+import { getToken, removeToken } from '@/lib/api';
+import Cookies from 'js-cookie';
+
+function getUserRole(): string | null {
+  if (typeof window === 'undefined') return null;
+  const token = Cookies.get('token');
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload));
+    return decoded.role || null;
+  } catch {
+    return null;
+  }
+}
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = React.useState(false);
   const { itemCount } = useCart();
+  const role = getUserRole();
+  const isMerchant = role === 'MERCHANT' || role === 'ADMIN' || role === 'SUPER_ADMIN';
+  const isLoggedIn = !!getToken();
+
+  const handleLogout = () => {
+    removeToken();
+    router.push('/');
+  };
 
   return (
-    <nav className="fixed w-full z-50 bg-white border-b">
+    <nav className="fixed w-full z-50 bg-white/95 backdrop-blur border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
-                M
+              <div className="h-9 w-9 rounded-full bg-[#1B7A3D] flex items-center justify-center text-white font-bold">
+                J
               </div>
-              <span className="text-xl font-bold text-gray-900">Mboro Market</span>
+              <span className="text-xl font-bold text-gray-900">
+                JëndCiThiès
+                <span className="block text-[10px] font-medium text-gray-500 -mt-1">
+                  by Sen-E-Carte
+                </span>
+              </span>
             </Link>
           </div>
 
@@ -30,7 +59,7 @@ export function Navbar() {
               href="/products"
               className={cn(
                 'text-sm font-medium transition-colors',
-                pathname === '/products' ? 'text-green-600' : 'text-gray-600 hover:text-gray-900',
+                pathname === '/products' ? 'text-green-700' : 'text-gray-600 hover:text-gray-900',
               )}
             >
               Produits
@@ -39,7 +68,7 @@ export function Navbar() {
               href="/shops"
               className={cn(
                 'text-sm font-medium transition-colors',
-                pathname === '/shops' ? 'text-green-600' : 'text-gray-600 hover:text-gray-900',
+                pathname?.startsWith('/shops') ? 'text-green-700' : 'text-gray-600 hover:text-gray-900',
               )}
             >
               Boutiques
@@ -47,22 +76,73 @@ export function Navbar() {
             <Link
               href="/cart"
               className={cn(
-                'text-sm font-medium transition-colors',
-                pathname === '/cart' ? 'text-green-600' : 'text-gray-600 hover:text-gray-900',
-                itemCount > 0 ? 'bg-green-50 px-3 py-2 rounded-lg' : '',
+                'flex items-center gap-1.5 text-sm font-medium transition-colors rounded-lg px-3 py-2',
+                pathname === '/cart' ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900',
               )}
             >
-              Panier <span className="ml-1 text-xs font-bold {itemCount > 0 ? 'text-green-600' : 'text-gray-400'}">{itemCount}</span>
-            </Link>
-            <Link
-              href="/login"
-              className={cn(
-                'text-sm font-medium transition-colors',
-                pathname === '/login' ? 'text-green-600' : 'text-gray-600 hover:text-gray-900',
+              <ShoppingCart className="h-4 w-4" />
+              Panier
+              {itemCount > 0 && (
+                <span className="ml-0.5 min-w-5 h-5 px-1 inline-flex items-center justify-center rounded-full bg-[#F59E0B] text-white text-[11px] font-bold">
+                  {itemCount}
+                </span>
               )}
-            >
-              Connexion
             </Link>
+            {isLoggedIn ? (
+              <>
+                {isMerchant ? (
+                  <Link
+                    href="/mon-commerce"
+                    className={cn(
+                      'flex items-center gap-1.5 text-sm font-medium transition-colors',
+                      pathname === '/mon-commerce' || pathname?.startsWith('/merchant')
+                        ? 'text-green-700'
+                        : 'text-gray-600 hover:text-gray-900',
+                    )}
+                  >
+                    <User className="h-4 w-4" />
+                    Mon commerce
+                  </Link>
+                ) : (
+                  <Link
+                    href="/orders"
+                    className={cn(
+                      'flex items-center gap-1.5 text-sm font-medium transition-colors',
+                      pathname === '/orders' ? 'text-green-700' : 'text-gray-600 hover:text-gray-900',
+                    )}
+                  >
+                    <User className="h-4 w-4" />
+                    Mes commandes
+                  </Link>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className={cn(
+                    'flex items-center gap-1.5 text-sm font-medium transition-colors',
+                    pathname === '/login' ? 'text-green-700' : 'text-gray-600 hover:text-gray-900',
+                  )}
+                >
+                  <User className="h-4 w-4" />
+                  Connexion
+                </Link>
+                <Link
+                  href="/register"
+                  className="jt-btn-accent !py-2 !px-4 text-sm"
+                >
+                  Devenir commerçant
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -103,18 +183,50 @@ export function Navbar() {
             >
               Panier {itemCount > 0 && <span className="ml-2 text-xs font-bold text-green-600">{itemCount}</span>}
             </Link>
-            <Link
-              href="/login"
-              onClick={() => setIsOpen(false)}
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Connexion
-            </Link>
-            <button
-              className="w-full px-3 py-2 rounded-md text-base font-medium text-white bg-green-600 hover:bg-green-700"
-            >
-              Devenir commerçant
-            </button>
+            {isLoggedIn ? (
+              <>
+                {isMerchant ? (
+                  <Link
+                    href="/mon-commerce"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Mon commerce
+                  </Link>
+                 ) : (
+                  <Link
+                    href="/orders"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Mes commandes
+                  </Link>
+                )}
+                <button
+                  onClick={() => { handleLogout(); setIsOpen(false); }}
+                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 text-center"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-white bg-[#F59E0B] hover:bg-amber-600 text-center"
+                >
+                  Devenir commerçant
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

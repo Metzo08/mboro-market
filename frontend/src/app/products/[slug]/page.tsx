@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import { formatPrice } from '@/lib/utils';
 import { Product } from '@/types';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
+import { productImage } from '@/lib/images';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -32,17 +34,19 @@ export async function generateStaticParams() {
   }
 }
 
-export const metadata = async ({ params }: { params: { slug: string } }): Promise<{ title: string; description?: string }> => {
-  const product = await getProduct(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<{ title: string; description?: string }> {
+  const { slug } = await params;
+  const product = await getProduct(slug);
   if (!product) return { title: 'Produit introuvable' };
   return {
     title: product.title,
     description: product.seoDescription || product.shortDescription,
   };
-};
+}
 
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product: Product | null = await getProduct(params.slug);
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product: Product | null = await getProduct(slug);
 
   if (!product) {
     return (
@@ -76,15 +80,22 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
               availability: product.availability === 'in_stock' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
               seller: {
                 '@type': 'Organization',
-                name: 'Mboro Market',
+                name: 'JëndCiThiès',
               },
             },
           }),
         }}
       />
       <div className="grid lg:grid-cols-2 gap-8">
-        <div className="h-80 bg-gray-200 rounded-lg flex items-center justify-center">
-          <span className="text-gray-400 text-lg">{product.shortDescription || 'Image du produit'}</span>
+        <div className="h-80 lg:h-[420px] bg-gray-100 rounded-xl overflow-hidden relative">
+          <Image
+            src={productImage(product)}
+            alt={product.title}
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="object-cover"
+          />
         </div>
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.title}</h1>

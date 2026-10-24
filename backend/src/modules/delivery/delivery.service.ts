@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { DeliveryZoneDto, DeliveryTaskDto } from './dto';
 
 @Injectable()
 export class DeliveryService {
   constructor(private prisma: PrismaService) {}
 
-  async createZone(dto: any) {
+  async createZone(dto: DeliveryZoneDto) {
     return this.prisma.deliveryZone.create({
       data: {
         shopId: dto.shopId,
@@ -27,7 +32,7 @@ export class DeliveryService {
     return this.prisma.deliveryZone.findMany({ where: { shopId } });
   }
 
-  async createTask(dto: any) {
+  async createTask(dto: DeliveryTaskDto) {
     return this.prisma.deliveryTask.create({
       data: {
         orderId: dto.orderId,

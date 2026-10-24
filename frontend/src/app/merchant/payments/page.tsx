@@ -1,3 +1,5 @@
+'use client';
+
 import { api, getToken } from '@/lib/api';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { useEffect, useState } from 'react';
@@ -8,20 +10,27 @@ export default function MerchantPayments() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      window.location.href = `/login?callback=/merchant/payments`;
-      return;
-    }
-    api.get('/payments', { params: { shopId: '8e0b526e-e8d1-455f-8eac-245f0d4aa84c' } })
-      .then((res) => {
-        setPayments(res.data.items || res.data || []);
-        setLoading(false);
-      })
-      .catch((err: any) => {
+    const loadShopAndPayments = async () => {
+      const token = getToken();
+      if (!token) {
+        window.location.href = `/login?callback=/merchant/payments`;
+        return;
+      }
+      try {
+        const meRes = await api.get('/auth/me');
+        const userId = meRes.data.user.id;
+        const shopRes = await api.get(`/shops/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const paymentsRes = await api.get('/payments', { params: { shopId: shopRes.data.id } });
+        setPayments(paymentsRes.data.items || paymentsRes.data || []);
+      } catch (err: any) {
         setError(err.response?.data?.message || 'Erreur lors du chargement');
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    loadShopAndPayments();
   }, []);
 
   if (!getToken()) {

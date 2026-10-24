@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
+import { CreateNotificationDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('notifications')
@@ -16,7 +17,7 @@ export class NotificationsController {
   constructor(private service: NotificationsService) {}
 
   @Post()
-  create(@Body() dto: any) {
+  create(@Body() dto: CreateNotificationDto) {
     return this.service.create(dto);
   }
 

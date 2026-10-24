@@ -8,13 +8,19 @@ import { CartProvider } from '@/components/cart/CartProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Mboro Market - Commerce local à Thiès',
-  description: 'Place de marché locale pour les commerçants de Mboro et Thiès, Sénégal',
+  title: {
+    default: 'JëndCiThiès — Commerce local à Thiès | by Sen-E-Carte',
+    template: '%s | JëndCiThiès',
+  },
+  description:
+    'JëndCiThiès by Sen-E-Carte : place de marché locale pour les commerçants de Mboro, Thiès et région. Produits frais, artisans, restaurants. Commandez en 3 clics.',
+  keywords: ['Thiès', 'Mboro', 'Sénégal', 'commerce local', 'marché', 'boutique', 'artisan'],
   openGraph: {
-    title: 'Mboro Market',
-    description: 'Commerce local, produits frais et services à Thiès',
+    title: 'JëndCiThiès — Commerce local à Thiès',
+    description: 'Commerce local, produits frais et services à Thiès et Mboro. Commandez en 3 clics.',
     type: 'website',
     locale: 'fr_SN',
+    siteName: 'JëndCiThiès',
   },
 };
 

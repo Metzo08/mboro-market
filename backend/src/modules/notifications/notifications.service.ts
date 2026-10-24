@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreateNotificationDto } from './dto';
 
 @Injectable()
 export class NotificationsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: any) {
+  async create(dto: CreateNotificationDto) {
     return this.prisma.notification.create({
       data: {
         recipientId: dto.recipientId,
         shopId: dto.shopId,
-        channel: dto.channel ?? 'IN_APP',
+        channel: (dto.channel ?? 'IN_APP') as any,
         template: dto.template,
         subject: dto.subject,
         content: dto.content,

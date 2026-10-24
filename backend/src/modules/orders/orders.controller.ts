@@ -7,6 +7,7 @@ import {
   Param,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,24 +21,29 @@ export class OrdersController {
   constructor(private service: OrdersService) {}
 
   @Post()
-  @Roles('super_admin', 'admin', 'merchant', 'customer')
-  create(@Body() dto: CreateOrderDto) {
-    return this.service.create(dto);
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT', 'CUSTOMER')
+  create(@Body() dto: CreateOrderDto, @Req() req: any) {
+    // Force userId = utilisateur connecté (anti-usurpation, ORD-011)
+    return this.service.create({ ...dto, userId: req.user.id }, req.user);
   }
 
   @Get()
-  findAll(@Query('shopId') shopId?: string, @Query('userId') userId?: string) {
-    return this.service.findAll(shopId, userId);
+  findAll(
+    @Query('shopId') shopId?: string,
+    @Query('userId') userId?: string,
+    @Req() req?: any,
+  ) {
+    return this.service.findAll(shopId, userId, req?.user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  findOne(@Param('id') id: string, @Req() req: any) {
+    return this.service.findOne(id, req.user);
   }
 
   @Patch(':id/status')
-  @Roles('super_admin', 'admin', 'merchant')
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
-    return this.service.updateStatus(id, dto);
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT')
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto, @Req() req: any) {
+    return this.service.updateStatus(id, dto, req.user);
   }
 }
