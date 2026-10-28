@@ -12,7 +12,7 @@ import {
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/index';
+import { Roles, Public } from '../../common/decorators/index';
 import { CreateOrderDto, UpdateOrderStatusDto } from './dto';
 
 @Controller('orders')
@@ -20,11 +20,12 @@ import { CreateOrderDto, UpdateOrderStatusDto } from './dto';
 export class OrdersController {
   constructor(private service: OrdersService) {}
 
+  @Public()
   @Post()
-  @Roles('SUPER_ADMIN', 'ADMIN', 'MERCHANT', 'CUSTOMER')
   create(@Body() dto: CreateOrderDto, @Req() req: any) {
-    // Force userId = utilisateur connecté (anti-usurpation, ORD-011)
-    return this.service.create({ ...dto, userId: req.user.id }, req.user);
+    // Si connecte, force userId = utilisateur connecte (anti-usurpation ORD-011)
+    // Si invite (ORD-002), creation automatique via le numero de telephone
+    return this.service.create({ ...dto, userId: req?.user?.id }, req?.user);
   }
 
   @Get()

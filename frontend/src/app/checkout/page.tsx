@@ -39,22 +39,17 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) {
-      window.location.href = `/login?callback=/checkout`;
-      return;
+    if (token) {
+      api.get('/auth/me')
+        .then((res) => {
+          const u = res.data.user || res.data;
+          setUser(u);
+          if (u.phone) {
+            setAddress((prev) => ({ ...prev, phone: prev.phone || u.phone }));
+          }
+        })
+        .catch(() => {});
     }
-    api.get('/auth/me')
-      .then((res) => {
-        const u = res.data.user || res.data;
-        setUser(u);
-        if (u.phone) {
-          setAddress((prev) => ({ ...prev, phone: prev.phone || u.phone }));
-        }
-      })
-      .catch(() => {
-        removeToken();
-        window.location.href = `/login?callback=/checkout`;
-      });
   }, []);
 
   // Charger les informations de la boutique (notamment le numéro WhatsApp)
@@ -62,23 +57,11 @@ export default function CheckoutPage() {
     if (items.length > 0 && items[0].product?.shopId) {
       api.get(`/shops/${items[0].product.shopId}`)
         .then((res) => setShop(res.data))
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [items]);
 
-  if (!user) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-20">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Connexion requise</h2>
-          <p className="text-gray-600 mb-8">Vous devez être connecté pour passer une commande.</p>
-          <Link href="/login" className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-            Se connecter
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Support invité (ORD-002) : pas de blocage si non connecté
 
   if (success && createdOrder) {
     const shopWhatsapp = shop?.whatsapp || shop?.phone || '+221771234567';
@@ -88,8 +71,8 @@ export default function CheckoutPage() {
       total,
       deliveryMethod: deliveryMode,
       address,
-      customerName: user.name || user.email || 'Client',
-      customerPhone: address.phone || user.phone,
+      customerName: user?.name || user?.email || address.phone || 'Client',
+      customerPhone: address.phone || user?.phone,
       orderNumber: createdOrder.orderNumber,
     });
     const waUrl = buildWhatsAppLink(shopWhatsapp, waMessage);
@@ -205,16 +188,17 @@ export default function CheckoutPage() {
       const formattedAddress = deliveryMode === 'pickup'
         ? { mode: 'PICKUP', shopId: items[0].product.shopId, phone: address.phone }
         : {
-            mode: 'DELIVERY',
-            commune: address.commune,
-            quarter: address.quarter,
-            landmark: address.landmark,
-            phone: address.phone,
-            instructions: address.instructions,
-            fullText: `${address.commune}, ${address.quarter} — Repère: ${address.landmark}`,
-          };
+          mode: 'DELIVERY',
+          commune: address.commune,
+          quarter: address.quarter,
+          landmark: address.landmark,
+          phone: address.phone,
+          instructions: address.instructions,
+          fullText: `${address.commune}, ${address.quarter} — Repère: ${address.landmark}`,
+        };
 
       const orderRes = await api.post('/orders', {
+        userId: user?.id,
         shopId: items[0].product.shopId,
         items: orderItems,
         deliveryAddress: formattedAddress,
@@ -224,8 +208,8 @@ export default function CheckoutPage() {
           paymentMethod === 'whatsapp' || paymentMethod === 'cod'
             ? 'CASH_ON_DELIVERY'
             : deliveryMode === 'pickup'
-            ? 'PICKUP'
-            : 'ONLINE',
+              ? 'PICKUP'
+              : 'ONLINE',
       });
 
       setCreatedOrder(orderRes.data);
@@ -273,11 +257,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setDeliveryMode('delivery')}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    deliveryMode === 'delivery'
+                  className={`p-4 rounded-xl border text-left transition-all ${deliveryMode === 'delivery'
                       ? 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-600/30'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <p className="font-semibold text-gray-900 flex items-center gap-1.5">
                     <span>🛵</span>
@@ -289,11 +272,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setDeliveryMode('pickup')}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    deliveryMode === 'pickup'
+                  className={`p-4 rounded-xl border text-left transition-all ${deliveryMode === 'pickup'
                       ? 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-600/30'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <p className="font-semibold text-gray-900 flex items-center gap-1.5">
                     <span>🏪</span>
@@ -338,11 +320,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('whatsapp')}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    paymentMethod === 'whatsapp'
+                  className={`p-4 rounded-xl border text-left transition-all ${paymentMethod === 'whatsapp'
                       ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-600/30'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-emerald-950 flex items-center gap-1.5">
@@ -362,11 +343,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('wave')}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    paymentMethod === 'wave'
+                  className={`p-4 rounded-xl border text-left transition-all ${paymentMethod === 'wave'
                       ? 'border-sky-600 bg-sky-50 ring-2 ring-sky-600/30'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <p className="font-semibold text-gray-900">Wave</p>
                   <p className="text-xs text-gray-500">Paiement mobile instantané sécurisé</p>
@@ -376,11 +356,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('cod')}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    paymentMethod === 'cod'
+                  className={`p-4 rounded-xl border text-left transition-all ${paymentMethod === 'cod'
                       ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-600/30'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <p className="font-semibold text-gray-900">À la livraison (Espèces)</p>
                   <p className="text-xs text-gray-500">Payez en mains propres au livreur</p>
@@ -390,11 +369,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('paydunya')}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    paymentMethod === 'paydunya'
+                  className={`p-4 rounded-xl border text-left transition-all ${paymentMethod === 'paydunya'
                       ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-600/30'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <p className="font-semibold text-gray-900">PayDunya</p>
                   <p className="text-xs text-gray-500">Carte bancaire & autres Mobile Money</p>
@@ -416,8 +394,8 @@ export default function CheckoutPage() {
               {loading
                 ? 'Traitement en cours...'
                 : paymentMethod === 'whatsapp'
-                ? 'Confirmer & Ouvrir WhatsApp →'
-                : 'Valider la commande'}
+                  ? 'Confirmer & Ouvrir WhatsApp →'
+                  : 'Valider la commande'}
             </Button>
 
             <div className="flex items-center justify-center gap-2 text-xs text-gray-500 pt-2">

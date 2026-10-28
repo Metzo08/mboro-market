@@ -1,23 +1,50 @@
 'use client';
 
+import { useState } from 'react';
 import { useCart } from './CartProvider';
 import { Product } from '@/types';
-import { Button } from '@/components/ui/Button';
+import { ShoppingCart, Check } from 'lucide-react';
 
 interface AddToCartButtonProps {
   product: Product;
+  className?: string;
+  showIcon?: boolean;
 }
 
-export function AddToCartButton({ product }: AddToCartButtonProps) {
-  const { addItem, itemCount } = useCart();
+export function AddToCartButton({ product, className = '', showIcon = true }: AddToCartButtonProps) {
+  const { addItem } = useCart();
+  const [justAdded, setJustAdded] = useState(false);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, 1);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1800);
+  };
 
   return (
     <button
-      onClick={() => addItem(product, 1)}
-      className="w-full px-4 py-2 bg-green-600 text-white text-sm rounded-md font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+      onClick={handleClick}
+      type="button"
+      className={`w-full py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all transform active:scale-95 shadow-sm ${
+        justAdded
+          ? 'bg-[#2E8B57] text-white shadow-md'
+          : 'jt-btn-primary'
+      } ${className}`}
+      aria-live="polite"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M6 2L3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6l-3-4z"></path><circle cx="15.5" cy="19" r="1.5"></circle><circle cx="7.5" cy="19" r="1.5"></circle></svg>
-      Ajouter au panier
+      {justAdded ? (
+        <>
+          <Check className="w-4 h-4 animate-bounce" />
+          <span>Ajouté au panier !</span>
+        </>
+      ) : (
+        <>
+          {showIcon && <ShoppingCart className="w-4 h-4" />}
+          <span>Ajouter au panier</span>
+        </>
+      )}
     </button>
   );
 }

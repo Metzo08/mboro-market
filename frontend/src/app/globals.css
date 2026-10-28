@@ -1,71 +1,89 @@
 @import "tailwindcss";
 
-/* Design System JëndCiThiès — CDC §2-3 (Sen-E-Carte) */
+/* ==========================================================================
+   Design System JëndCiThiès by Sen-E-Carte — Cahier des Charges v2.0 §2-3
+   Concept : « Chaleur du marché, clarté du digital »
+   ========================================================================== */
+
 :root {
-  /* Palette principale — Vert sénégalais */
-  --jt-green-950: #0f3d1f;
-  --jt-green-900: #14532d;
-  --jt-green-800: #166534;
-  --jt-green-700: #1b7a3d;
-  --jt-green-600: #228b4a;
-  --jt-green-500: #4ade80;
-  --jt-green-100: #dcfce7;
-  --jt-green-50: #f0fdf4;
+  /* Primaire — Terracotta (Orange brûlé) : CTA principaux, accents */
+  --jt-terracotta: #E8632C;
+  --jt-terracotta-dark: #B6481A;
+  --jt-terracotta-light: #FBECE4;
 
-  /* Accents */
-  --jt-amber-500: #f59e0b;
-  --jt-amber-600: #d97706;
-  --jt-amber-100: #fef3c7;
-  --jt-terracotta: #c2410c;
+  /* Secondaire — Teal profond (Bleu-vert Atlantique) : Navigation, confiance */
+  --jt-teal: #115E59;
+  --jt-teal-dark: #0D4A46;
+  --jt-teal-light: #14B8A6;
+  --jt-teal-surface: #E6F4F2;
 
-  /* Neutres */
-  --jt-sand: #faf6f0;
-  --jt-ink: #142318;
-  --jt-muted: #6b7a6d;
-  --jt-gray-100: #f3f4f6;
-  --jt-border: #e5e7eb;
+  /* Accent — Or wax (Jaune ambré) : Promotions, notes */
+  --jt-wax-gold: #F2A93B;
+  --jt-wax-gold-dark: #D4881A;
+  --jt-wax-gold-light: #FEF6E9;
 
-  --background: #ffffff;
-  --foreground: var(--jt-ink);
+  /* Statuts */
+  --jt-green-senegal: #2E8B57; /* Succès, ouvert */
+  --jt-red-brick: #C9432D;     /* Alerte, rupture */
+
+  /* Neutres chauds (jamais de blanc pur ni noir pur) */
+  --jt-bg-main: #FFFBF5;       /* Blanc cassé chaud */
+  --jt-bg-sub: #F5EDE1;        /* Sable clair */
+  --jt-text-main: #2B2420;     /* Anthracite chaud */
+  --jt-text-sub: #6B625A;      /* Gris chaud */
+  --jt-border: #E2D6C4;        /* Gris sable */
+
+  /* Variables standards Next/Tailwind */
+  --background: var(--jt-bg-main);
+  --foreground: var(--jt-text-main);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-green-950: var(--jt-green-950);
-  --color-green-900: var(--jt-green-900);
-  --color-green-800: var(--jt-green-800);
-  --color-green-700: var(--jt-green-700);
-  --color-green-600: var(--jt-green-600);
-  --color-green-500: var(--jt-green-500);
-  --color-green-100: var(--jt-green-100);
-  --color-green-50: var(--jt-green-50);
-  --color-amber-500: var(--jt-amber-500);
-  --color-amber-600: var(--jt-amber-600);
-  --color-amber-100: var(--jt-amber-100);
+
   --color-terracotta: var(--jt-terracotta);
-  --color-sand: var(--jt-sand);
-  --color-ink: var(--jt-ink);
-  --color-muted: var(--jt-muted);
+  --color-terracotta-dark: var(--jt-terracotta-dark);
+  --color-terracotta-light: var(--jt-terracotta-light);
+
+  --color-teal-main: var(--jt-teal);
+  --color-teal-dark: var(--jt-teal-dark);
+  --color-teal-light: var(--jt-teal-light);
+  --color-teal-surface: var(--jt-teal-surface);
+
+  --color-wax-gold: var(--jt-wax-gold);
+  --color-wax-dark: var(--jt-wax-gold-dark);
+  --color-wax-light: var(--jt-wax-gold-light);
+
+  --color-green-senegal: var(--jt-green-senegal);
+  --color-red-brick: var(--jt-red-brick);
+
+  --color-sand: var(--jt-bg-sub);
+  --color-sand-border: var(--jt-border);
+  --color-ink: var(--jt-text-main);
+  --color-muted: var(--jt-text-sub);
+
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--jt-bg-main);
+  color: var(--jt-text-main);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--jt-bg-main);
+  color: var(--jt-text-main);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===== Animations ===== */
+/* ===== Animations fluides ===== */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -73,79 +91,107 @@ body {
   }
 }
 
-@keyframes pulseGreen {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(27, 122, 61, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(27, 122, 61, 0);
-  }
-}
-
 .animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-pulse-green {
-  animation: pulseGreen 2s infinite;
-}
-
-/* ===== Classes utilitaires marque ===== */
+/* ===== Boutons & Composants Signature CDC §2-3 ===== */
 .jt-btn-primary {
-  background: var(--jt-green-700);
-  color: #fff;
+  background-color: var(--jt-terracotta);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(232, 99, 44, 0.25);
+  transition: all 0.2s ease;
 }
 .jt-btn-primary:hover {
-  background: var(--jt-green-900);
+  background-color: var(--jt-terracotta-dark);
+  box-shadow: 0 4px 14px rgba(182, 72, 26, 0.35);
+  transform: translateY(-1px);
 }
-.jt-btn-accent {
-  background: var(--jt-amber-500);
-  color: #142318;
-}
-.jt-btn-accent:hover {
-  background: var(--jt-amber-600);
-  color: #fff;
-}
-.jt-btn-secondary {
-  background: var(--jt-amber-500);
-  color: #142318;
-}
-.jt-btn-secondary:hover {
-  background: var(--jt-amber-600);
-  color: #fff;
-}
-.jt-btn-outline {
-  background: transparent;
-  color: var(--jt-green-700);
-  border: 2px solid var(--jt-green-700);
-}
-.jt-btn-outline:hover {
-  background: var(--jt-green-700);
-  color: #fff;
-}
-.jt-sand-bg {
-  background: var(--jt-sand);
-}
-.jt-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.jt-card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+.jt-btn-primary:active {
+  transform: scale(0.98);
 }
 
-/* ===== Scrollbar ===== */
+.jt-btn-secondary {
+  background-color: var(--jt-teal);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(17, 94, 89, 0.2);
+  transition: all 0.2s ease;
+}
+.jt-btn-secondary:hover {
+  background-color: var(--jt-teal-dark);
+  box-shadow: 0 4px 14px rgba(13, 74, 70, 0.3);
+  transform: translateY(-1px);
+}
+.jt-btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.jt-btn-accent {
+  background-color: var(--jt-wax-gold);
+  color: var(--jt-text-main);
+  font-weight: 700;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+.jt-btn-accent:hover {
+  background-color: var(--jt-wax-gold-dark);
+  color: #ffffff;
+}
+
+.jt-btn-outline {
+  background-color: transparent;
+  color: var(--jt-teal);
+  border: 2px solid var(--jt-teal);
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.jt-btn-outline:hover {
+  background-color: var(--jt-teal);
+  color: #ffffff;
+}
+
+/* Cartes et surfaces */
+.jt-sand-bg {
+  background-color: var(--jt-bg-sub);
+}
+
+.jt-card {
+  background-color: #ffffff;
+  border: 1px solid var(--jt-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(43, 36, 32, 0.05);
+}
+
+.jt-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.jt-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -4px rgba(43, 36, 32, 0.1);
+}
+
+/* Pill shape CDC §3.1 */
+.jt-pill {
+  border-radius: 9999px;
+}
+
+/* Scrollbars discrètes */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--jt-bg-sub);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--jt-green-300);
-  border-radius: 4px;
+  background: #D5C7B3;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--jt-green-500);
+  background: var(--jt-terracotta);
 }

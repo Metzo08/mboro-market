@@ -37,19 +37,19 @@ export function Navbar() {
   };
 
   return (
-    <nav className="fixed w-full z-50 bg-white border-b border-green-50/60 backdrop-blur-md">
+    <nav className="fixed w-full z-50 bg-[#FFFBF5]/95 border-b border-[#E2D6C4] backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-700 to-green-600 flex items-center justify-center text-white font-bold shadow-lg">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="h-10 w-10 rounded-xl bg-[#115E59] flex items-center justify-center text-white font-black text-lg shadow-md border border-[#0D4A46]">
                 J
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold tracking-tight text-green-900">
+                <span className="text-xl font-extrabold tracking-tight text-[#115E59]">
                   JëndCiThiès
                 </span>
-                <span className="text-[10px] font-medium text-green-600 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-[#E8632C] uppercase tracking-wider">
                   by Sen-E-Carte
                 </span>
               </div>
@@ -61,7 +61,7 @@ export function Navbar() {
               href="/products"
               className={cn(
                 'text-sm font-semibold transition-colors',
-                pathname === '/products' ? 'text-green-700' : 'text-gray-600 hover:text-green-700',
+                pathname === '/products' ? 'text-[#E8632C] font-bold' : 'text-[#2B2420] hover:text-[#E8632C]',
               )}
             >
               Produits
@@ -70,7 +70,7 @@ export function Navbar() {
               href="/shops"
               className={cn(
                 'text-sm font-semibold transition-colors',
-                pathname?.startsWith('/shops') ? 'text-green-700' : 'text-gray-600 hover:text-green-700',
+                pathname?.startsWith('/shops') ? 'text-[#E8632C] font-bold' : 'text-[#2B2420] hover:text-[#E8632C]',
               )}
             >
               Boutiques
@@ -79,13 +79,13 @@ export function Navbar() {
               href="/cart"
               className={cn(
                 'flex items-center gap-2 text-sm font-semibold transition-colors',
-                pathname === '/cart' ? 'text-green-700' : 'text-gray-600 hover:text-green-700',
+                pathname === '/cart' ? 'text-[#E8632C] font-bold' : 'text-[#2B2420] hover:text-[#E8632C]',
               )}
             >
               <ShoppingCart className="h-5 w-5" />
               Panier
               {itemCount > 0 && (
-                <span className="ml-1 min-w-[1.5rem] h-[1.5rem] px-1.5 inline-flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                <span className="ml-1 min-w-[1.5rem] h-[1.5rem] px-1.5 inline-flex items-center justify-center rounded-full bg-[#E8632C] text-white text-[10px] font-bold shadow-sm animate-pulse">
                   {itemCount}
                 </span>
               )}
@@ -95,21 +95,21 @@ export function Navbar() {
                 {isMerchant ? (
                   <Link
                     href="/mon-commerce"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-900 text-white text-sm font-medium hover:bg-green-800 transition-colors shadow-lg"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#115E59] text-white text-sm font-semibold hover:bg-[#0D4A46] transition-colors shadow-sm"
                   >
                     <User className="h-4 w-4" /> Mon commerce
                   </Link>
                 ) : (
                   <Link
                     href="/orders"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-green-100 bg-white text-green-700 text-sm font-medium hover:bg-green-50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#E2D6C4] bg-white text-[#115E59] text-sm font-semibold hover:bg-[#F5EDE1] transition-colors"
                   >
                     Mes commandes
                   </Link>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2.5 rounded-xl border border-red-100 bg-white text-red-600 text-sm font-medium hover:bg-red-50 transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-red-200 bg-white text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors"
                 >
                   Déconnexion
                 </button>
@@ -118,13 +118,13 @@ export function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-[#E2D6C4] bg-white text-[#2B2420] text-sm font-semibold hover:bg-[#F5EDE1] transition-colors"
                 >
                   Connexion
                 </Link>
                 <Link
                   href="/register"
-                  className="px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors shadow-lg"
+                  className="jt-btn-primary px-5 py-2.5 text-sm font-bold"
                 >
                   Devenir commerçant
                 </Link>

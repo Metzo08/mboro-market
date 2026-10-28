@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { api, setToken, removeToken } from '@/lib/api';
+import { api, setToken } from '@/lib/api';
+import { ShieldCheck, Phone, Lock, Mail, ArrowRight } from 'lucide-react';
 
 type AuthMode = 'phone' | 'password';
 
@@ -16,7 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   // Mode téléphone (OTP)
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+221770000001');
 
   // Mode email/mot de passe
   const [email, setEmail] = useState('');
@@ -29,7 +30,7 @@ export default function LoginPage() {
 
     try {
       await api.post('/auth/login', { phone });
-      router.push('/verify-otp');
+      router.push(`/verify-otp?phone=${encodeURIComponent(phone)}`);
       router.refresh();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erreur lors de la connexion');
@@ -49,7 +50,8 @@ export default function LoginPage() {
       localStorage.setItem('token', res.data.access_token);
       sessionStorage.setItem('token', res.data.access_token);
 
-      if (res.data.user.role === 'MERCHANT') {
+      const user = res.data.user || res.data;
+      if (user.role === 'MERCHANT' || user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
         router.push('/mon-commerce');
       } else {
         router.push('/');
@@ -63,101 +65,132 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-6">
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#FFFBF5]">
+      <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-3xl border border-[#E2D6C4] shadow-sm">
         <div className="text-center">
-          <div className="h-12 w-12 rounded-full bg-green-600 flex items-center justify-center text-white font-bold mx-auto mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#115E59] text-white flex items-center justify-center font-black text-xl mx-auto mb-4 shadow-sm">
             J
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900">Connexion</h2>
-          <p className="text-center text-sm text-gray-600 mt-2">
-            Connectez-vous à votre compte JëndCiThiès
+          <h1 className="text-2xl font-black text-[#2B2420] tracking-tight">
+            Connexion JëndCiThiès
+          </h1>
+          <p className="text-xs text-[#6B625A] mt-1">
+            Accédez à votre espace client ou gestionnaire de boutique
           </p>
         </div>
 
         {/* Mode sélection */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex p-1 bg-gray-100 rounded-lg">
+        <div className="flex justify-center">
+          <div className="inline-flex p-1 bg-[#F5EDE1] rounded-xl w-full">
             <button
+              type="button"
               onClick={() => setMode('phone')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${mode === 'phone' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                mode === 'phone'
+                  ? 'bg-white text-[#115E59] shadow-sm'
+                  : 'text-[#6B625A] hover:text-[#2B2420]'
+              }`}
             >
               Téléphone (OTP)
             </button>
             <button
+              type="button"
               onClick={() => setMode('password')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${mode === 'password' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                mode === 'password'
+                  ? 'bg-white text-[#115E59] shadow-sm'
+                  : 'text-[#6B625A] hover:text-[#2B2420]'
+              }`}
             >
               Email / Mot de passe
             </button>
           </div>
         </div>
 
-        <form className="space-y-6" onSubmit={mode === 'phone' ? handlePhoneSubmit : handlePasswordSubmit}>
+        <form className="space-y-4" onSubmit={mode === 'phone' ? handlePhoneSubmit : handlePasswordSubmit}>
           {mode === 'phone' ? (
-            <div className="space-y-2">
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+            <div>
+              <label htmlFor="phone" className="block text-xs font-bold text-[#2B2420] mb-1">
                 Numéro de téléphone
               </label>
-              <Input
-                id="phone"
-                type="tel"
-                autoComplete="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+221 70 xxx xxxx"
-              />
+              <div className="relative">
+                <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+221 77 123 45 67"
+                  className="pl-9 text-sm rounded-xl border-[#E2D6C4]"
+                />
+              </div>
+              <p className="text-[11px] text-[#6B625A] mt-1.5">
+                Un code SMS sécurisé sera envoyé à ce numéro.
+              </p>
             </div>
           ) : (
             <>
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
+              <div>
+                <label htmlFor="email" className="block text-xs font-bold text-[#2B2420] mb-1">
+                  Adresse e-mail
                 </label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="exemple@email.com"
-                />
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="commercant@senecarte.sn"
+                    className="pl-9 text-sm rounded-xl border-[#E2D6C4]"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <div>
+                <label htmlFor="password" className="block text-xs font-bold text-[#2B2420] mb-1">
                   Mot de passe
                 </label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pl-9 text-sm rounded-xl border-[#E2D6C4]"
+                  />
+                </div>
               </div>
             </>
           )}
 
-          {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+          {error && (
+            <div className="rounded-xl bg-red-50 p-3 text-xs text-red-700 border border-red-200">
+              {error}
+            </div>
+          )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Connexion en cours...' : mode === 'phone' ? 'Envoyer le code OTP' : 'Se connecter'}
+          <Button
+            type="submit"
+            className="w-full py-3.5 jt-btn-primary rounded-xl text-sm font-bold shadow-md"
+            disabled={loading}
+          >
+            {loading ? 'Connexion...' : mode === 'phone' ? 'Continuer avec mon téléphone →' : 'Se connecter'}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Vous n'avez pas de compte ?{' '}
-          <Link href="/register" className="font-medium text-green-600 hover:text-green-500">
-            Créer un compte
+        <p className="text-center text-xs text-[#6B625A]">
+          Vous n'avez pas encore de compte ?{' '}
+          <Link href="/register" className="font-bold text-[#E8632C] hover:underline">
+            Créer un compte commerçant
           </Link>
-        </p>
-
-        <p className="text-center text-xs text-gray-400">
-          Activation boutique : 5 000 FCFA + 2 500 FCFA/mois
         </p>
       </div>
     </div>

@@ -43,8 +43,18 @@ export class OrdersService {
       throw new BadRequestException('La commande doit contenir au moins un article');
     }
     // Anti-usurpation (ORD-011) : userId = utilisateur authentifié, jamais le client
-    const customerId = actor?.id ?? dto.userId;
-    if (!customerId) throw new BadRequestException('Utilisateur non identifié');
+    let customerId = actor?.id ?? dto.userId;
+    if (!customerId) {
+      // Commande invité (ORD-002) : identifier ou créer un compte avec le téléphone
+      const phone = (dto.deliveryAddress as any)?.phone || 'guest-' + Date.now();
+      let guestUser = await this.prisma.user.findUnique({ where: { phone } });
+      if (!guestUser) {
+        guestUser = await this.prisma.user.create({
+          data: { phone, status: 'ACTIVE', role: 'CUSTOMER' },
+        });
+      }
+      customerId = guestUser.id;
+    }
 
     let subtotal = 0;
     const items: any[] = [];

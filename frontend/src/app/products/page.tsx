@@ -46,46 +46,82 @@ export default async function ProductsPage({
         <p className="text-gray-600">{total} produit(s) disponible(s)</p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 shadow-sm">
-        <form method="get" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="bg-white rounded-2xl border border-[#E2D6C4] p-5 mb-8 shadow-xs">
+        <form method="get" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label className="sr-only">Recherche</label>
+            <label className="block text-xs font-bold text-[#2B2420] mb-1">Mot-clé (FR ou Wolof)</label>
             <input
               type="text"
               name="q"
               defaultValue={query}
-              placeholder="Rechercher un produit…"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors dark:bg-gray-700 dark:text-gray-100"
+              placeholder="Ex: ceeb, mangue, soble..."
+              className="w-full rounded-xl border border-[#E2D6C4] px-4 py-2.5 text-sm text-[#2B2420] focus:outline-none focus:ring-2 focus:ring-[#E8632C] transition-colors"
               aria-label="Rechercher un produit"
             />
           </div>
           <div>
+            <label className="block text-xs font-bold text-[#2B2420] mb-1">Catégorie</label>
             <select
               name="category"
               defaultValue={category}
-              className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
+              className="w-full rounded-xl border border-[#E2D6C4] px-4 py-2.5 text-sm text-[#2B2420] focus:outline-none focus:ring-2 focus:ring-[#E8632C] transition-colors bg-white"
             >
               <option value="ALL">Toutes catégories</option>
-              <option value="mangue">Mangues</option>
-              <option value="riz">Riz & Céréales</option>
-              <option value="légume">Légumes</option>
-              <option value="fruit">Fruits</option>
-              <option value="artisanat">Artisanat</option>
-              <option value="restaurant">Restaurant</option>
+              <option value="epicerie">Épicerie</option>
+              <option value="legumes">Légumes</option>
+              <option value="fruits">Fruits</option>
+              <option value="viandes">Viandes & Boucherie</option>
+              <option value="cuisine">Plats & Restaurants</option>
+              <option value="tissus">Bazin, Wax & Tissus</option>
+              <option value="telephonie">Téléphonie & Électronique</option>
+              <option value="materiaux">Matériaux de construction</option>
             </select>
           </div>
           <div>
+            <label className="block text-xs font-bold text-[#2B2420] mb-1">Disponibilité</label>
             <select
               name="availability"
               defaultValue={availability}
-              className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
+              className="w-full rounded-xl border border-[#E2D6C4] px-4 py-2.5 text-sm text-[#2B2420] focus:outline-none focus:ring-2 focus:ring-[#E8632C] transition-colors bg-white"
             >
-              <option value="all">Tout disponible</option>
-              <option value="in_stock">En stock</option>
-              <option value="out_of_stock">Épuisé</option>
+              <option value="all">Tous les produits</option>
+              <option value="in_stock">En stock uniquement</option>
             </select>
           </div>
+          <div className="flex items-end">
+            <button
+              type="submit"
+              className="w-full jt-btn-primary py-2.5 px-4 text-sm font-bold rounded-xl flex items-center justify-center gap-2"
+            >
+              <span>Appliquer les filtres</span>
+            </button>
+          </div>
         </form>
+
+        {/* Puces Wolof rapides */}
+        <div className="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-1.5 text-xs text-[#6B625A]">
+          <span className="font-bold text-[#E8632C]">Filtres rapides Wolof :</span>
+          {[
+            { label: 'ceeb (riz)', q: 'ceeb' },
+            { label: 'yapp (viande)', q: 'yapp' },
+            { label: 'soble (oignon)', q: 'soble' },
+            { label: 'kaani (piment)', q: 'kaani' },
+            { label: 'dibi (grillade)', q: 'dibi' },
+            { label: 'bazin', q: 'bazin' },
+          ].map((chip) => (
+            <Link
+              key={chip.q}
+              href={`/products?q=${chip.q}`}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                query === chip.q
+                  ? 'bg-[#E8632C] text-white border-[#E8632C]'
+                  : 'bg-[#F5EDE1] text-[#2B2420] border-[#E2D6C4] hover:bg-[#FBECE4]'
+              }`}
+            >
+              {chip.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

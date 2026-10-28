@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/utils';
 import { productImage, shopImage } from '@/lib/images';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
+import { ProductCard } from '@/components/products/ProductCard';
 
 interface ShopTabsProps {
   shop: Shop;
@@ -172,8 +173,14 @@ export function ShopTabs({ shop, products }: ShopTabsProps) {
 
       <div className="p-6">
         {tab === 'products' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {productItems}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.length > 0 ? (
+              products.map((p: any) => <ProductCard key={p.id} product={p} />)
+            ) : (
+              <div className="col-span-full rounded-2xl border-2 border-dashed border-[#E2D6C4] p-12 text-center text-[#6B625A]">
+                Aucun produit publié dans cette boutique pour le moment.
+              </div>
+            )}
           </div>
         )}
         {tab === 'info' && (

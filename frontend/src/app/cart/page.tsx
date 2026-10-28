@@ -2,20 +2,32 @@
 
 import { useCart } from '@/components/cart/CartProvider';
 import { formatPrice } from '@/lib/utils';
+import { productImage } from '@/lib/images';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
+import { Trash2, ArrowRight, ShoppingBag } from 'lucide-react';
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clear, total, itemCount } = useCart();
 
   if (items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center py-20">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Votre panier est vide</h2>
-          <p className="text-gray-600 mb-8">Ajoutez des produits pour commencer vos achats.</p>
-          <Link href="/products" className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-            Voir les produits
+      <div className="min-h-[60vh] flex items-center justify-center py-12 px-4 bg-[#FFFBF5]">
+        <div className="max-w-md w-full text-center bg-white p-8 sm:p-12 rounded-3xl border border-[#E2D6C4] shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-[#F5EDE1] text-[#E8632C] flex items-center justify-center mx-auto mb-5">
+            <ShoppingBag className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-black text-[#2B2420] mb-2">Votre panier est vide</h1>
+          <p className="text-sm text-[#6B625A] mb-8">
+            Découvrez les produits frais et artisans de Mboro et Thiès pour commencer vos achats.
+          </p>
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 jt-btn-primary px-8 py-3.5 text-sm font-bold shadow-md"
+          >
+            <span>Voir les produits</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -23,79 +35,127 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#FFFBF5]">
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-3/4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Votre panier ({itemCount})</h2>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#2B2420] mb-6 flex items-center gap-2">
+            <span>Votre panier</span>
+            <span className="text-sm font-bold px-3 py-1 rounded-full bg-[#115E59] text-white">
+              {itemCount} article{itemCount > 1 ? 's' : ''}
+            </span>
+          </h1>
+
           <div className="space-y-4">
             {items.map((item) => (
-              <div key={item.product.id + (item.variantId || '')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-gray-200">
-                <div className="h-32 w-32 bg-gray-100 flex-shrink-0 flex items-center justify-center rounded-lg">
-                  <span className="text-gray-400 text-xs">{item.product.shortDescription || 'Produit'}</span>
+              <div
+                key={item.product.id + (item.variantId || '')}
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-[#E2D6C4] shadow-xs"
+              >
+                {/* Image réelle du produit */}
+                <div className="relative h-24 w-24 rounded-xl overflow-hidden bg-[#F5EDE1] flex-shrink-0 border border-[#E2D6C4]">
+                  <Image
+                    src={productImage(item.product)}
+                    alt={item.product.title}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                  />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{item.product.title}</h3>
-                  <p className="text-gray-600 text-sm">{item.product.shortDescription || ''}</p>
+
+                <div className="flex-1 min-w-0">
+                  <Link href={`/products/${item.product.slug}`} className="hover:underline">
+                    <h2 className="font-bold text-base text-[#2B2420] truncate">
+                      {item.product.title}
+                    </h2>
+                  </Link>
+                  <p className="text-xs text-[#6B625A] line-clamp-1 mt-0.5">
+                    {item.product.shortDescription || 'Produit local'}
+                  </p>
+                  <p className="text-sm font-bold text-[#E8632C] mt-1 sm:hidden">
+                    {formatPrice(Number(item.product.price))}
+                  </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+
+                <div className="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                  {/* Sélecteur quantité */}
+                  <div className="flex items-center rounded-xl border border-[#E2D6C4] bg-[#FFFBF5] overflow-hidden">
                     <button
                       onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variantId)}
-                      className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                      className="w-8 h-8 flex items-center justify-center text-[#2B2420] hover:bg-[#F5EDE1] font-bold text-sm transition-colors"
+                      aria-label="Diminuer"
                     >
                       −
                     </button>
-                    <span className="font-medium">{item.quantity}</span>
+                    <span className="w-8 text-center text-xs font-bold text-[#2B2420]">
+                      {item.quantity}
+                    </span>
                     <button
                       onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variantId)}
-                      className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                      className="w-8 h-8 flex items-center justify-center text-[#2B2420] hover:bg-[#F5EDE1] font-bold text-sm transition-colors"
+                      aria-label="Augmenter"
                     >
                       +
                     </button>
                   </div>
-                  <p className="font-bold text-gray-900">
+
+                  {/* Prix total de ligne */}
+                  <p suppressHydrationWarning className="font-black text-base text-[#2B2420] min-w-[90px] text-right">
                     {formatPrice(Number(item.product.price) * item.quantity)}
                   </p>
+
+                  {/* Bouton supprimer */}
                   <button
                     onClick={() => removeItem(item.product.id, item.variantId)}
-                    className="text-red-500 hover:text-red-700 text-sm"
+                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Supprimer l'article"
+                    aria-label="Supprimer"
                   >
-                    Supprimer
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             ))}
           </div>
         </div>
+
+        {/* Récapitulatif commande */}
         <div className="lg:w-1/4">
-          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Résumé de la commande</h3>
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-gray-600">
+          <div className="bg-white p-6 rounded-3xl border border-[#E2D6C4] shadow-sm sticky top-24">
+            <h2 className="text-lg font-black text-[#2B2420] mb-4">Résumé</h2>
+            <div className="space-y-3 mb-6 text-sm">
+              <div className="flex justify-between text-[#6B625A]">
                 <span>Sous-total</span>
-                <span>{formatPrice(total)}</span>
+                <span suppressHydrationWarning className="font-bold text-[#2B2420]">
+                  {formatPrice(total)}
+                </span>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Frais de livraison</span>
-                <span>Gratuit</span>
+              <div className="flex justify-between text-[#6B625A]">
+                <span>Livraison</span>
+                <span className="text-[#115E59] font-semibold text-xs">
+                  Retrait gratuit / À domicile
+                </span>
               </div>
-              <div className="flex justify-between text-gray-900 font-bold border-t pt-3">
+              <div className="flex justify-between text-base font-black text-[#2B2420] border-t border-[#E2D6C4] pt-4">
                 <span>Total</span>
-                <span>{formatPrice(total)}</span>
+                <span suppressHydrationWarning className="text-[#E8632C] text-lg font-black">
+                  {formatPrice(total)}
+                </span>
               </div>
             </div>
-            <Button className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold" onClick={() => {
-              window.location.href = '/checkout';
-            }}>
+
+            <Link
+              href="/checkout"
+              className="block w-full py-4 text-center jt-btn-primary rounded-xl text-sm font-bold shadow-md transition-all mb-2"
+            >
               Passer la commande →
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full mt-2 text-xs text-gray-500 hover:text-red-600"
+            </Link>
+
+            <button
               onClick={() => clear()}
+              className="w-full py-2 text-center text-xs font-semibold text-[#6B625A] hover:text-red-600 transition-colors"
             >
               Vider le panier
-            </Button>
+            </button>
           </div>
         </div>
       </div>

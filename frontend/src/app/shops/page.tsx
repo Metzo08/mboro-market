@@ -45,42 +45,52 @@ export default async function ShopsPage({
         <p className="text-gray-600">Découvrez les commerçants de Mboro et Thiès</p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 shadow-sm">
-        <form method="get" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="bg-white rounded-2xl border border-[#E2D6C4] p-5 mb-8 shadow-xs">
+        <form method="get" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label className="sr-only">Recherche</label>
+            <label className="block text-xs font-bold text-[#2B2420] mb-1">Nom ou mot-clé</label>
             <input
               type="text"
               name="q"
               defaultValue={q}
-              placeholder="Rechercher par nom ou catégorie..."
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors dark:bg-gray-700 dark:text-gray-100"
+              placeholder="Ex: Baobab, Bazin, Marché..."
+              className="w-full rounded-xl border border-[#E2D6C4] px-4 py-2.5 text-sm text-[#2B2420] focus:outline-none focus:ring-2 focus:ring-[#E8632C] transition-colors"
               aria-label="Rechercher des boutiques"
             />
           </div>
           <div>
+            <label className="block text-xs font-bold text-[#2B2420] mb-1">Type d'activité</label>
             <select
               name="category"
               defaultValue={category}
-              className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
+              className="w-full rounded-xl border border-[#E2D6C4] px-4 py-2.5 text-sm text-[#2B2420] focus:outline-none focus:ring-2 focus:ring-[#E8632C] transition-colors bg-white"
             >
-              <option value="ALL">Toutes catégories</option>
-              <option value="restaurant">Restaurant</option>
-              <option value="artisanat">Artisanat</option>
-              <option value="alimentaire">Alimentaire</option>
-              <option value="beauté">Beauté</option>
+              <option value="ALL">Tous les types</option>
+              <option value="restaurant">Restaurant & Fast-Food</option>
+              <option value="artisanat">Artisans & Couture</option>
+              <option value="alimentaire">Épicerie & Alimentation</option>
+              <option value="beauté">Coiffure & Beauté</option>
             </select>
           </div>
           <div>
+            <label className="block text-xs font-bold text-[#2B2420] mb-1">Statut</label>
             <select
               name="status"
               defaultValue={status}
-              className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
+              className="w-full rounded-xl border border-[#E2D6C4] px-4 py-2.5 text-sm text-[#2B2420] focus:outline-none focus:ring-2 focus:ring-[#E8632C] transition-colors bg-white"
             >
               <option value="ALL">Tout statut</option>
-              <option value="ACTIVE">Ouvert</option>
+              <option value="ACTIVE">Ouvert maintenant</option>
               <option value="INACTIVE">Fermé</option>
             </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              type="submit"
+              className="w-full jt-btn-primary py-2.5 px-4 text-sm font-bold rounded-xl flex items-center justify-center gap-2"
+            >
+              <span>Filtrer les boutiques</span>
+            </button>
           </div>
         </form>
       </div>
