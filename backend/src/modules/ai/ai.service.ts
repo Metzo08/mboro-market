@@ -172,4 +172,106 @@ export class AiService {
       orderBy: { createdAt: 'asc' },
     });
   }
+
+  /**
+   * Réponse publique aux visiteurs anonymes du widget IA.
+   * Agrège les données des boutiques actives (prix, produits, livraison)
+   * sans jamais révéler de données privées.
+   */
+  async publicAsk(question: string, lang: string): Promise<{ answer: string }> {
+    const q = question.toLowerCase();
+
+    // Charger jusqu'à 3 boutiques actives + quelques produits réels
+    const shops = await this.prisma.shop.findMany({
+      where: { status: 'ACTIVE' },
+      take: 5,
+      select: { id: true, name: true, publicAddress: true, phone: true, whatsapp: true, shortDescription: true },
+    });
+    const products = await this.prisma.product.findMany({
+      where: { status: 'active', stock: { gt: 0 } },
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      select: { title: true, price: true, shopId: true },
+    });
+
+    const shopById = new Map(shops.map((s) => [s.id, s]));
+    const fmt = (n: any) =>
+      new Intl.NumberFormat('fr-SN', { maximumFractionDigits: 0 }).format(Number(n)) + ' FCFA';
+
+    // Détection d'intention
+    let intent = 'DEFAULT';
+    if (/prix|njeg|njëg|combien|ñaata|tarif/.test(q)) intent = 'PRICES';
+    else if (/stock|dispo|reste|es-tok/.test(q)) intent = 'STOCK';
+    else if (/livraison|livrer|yóbbu|adresse|quartier|zone/.test(q)) intent = 'DELIVERY';
+    else if (/boutique|shop|marché|mboro|thiès/.test(q)) intent = 'SHOPS';
+    else if (/bonjour|salaam|salut|nanga/.test(q)) intent = 'GREETING';
+
+    if (lang === 'WO') {
+      switch (intent) {
+        case 'PRICES':
+          if (!products.length) return { answer: 'Amul jumtukaay ci butik yi léegi.' };
+          return {
+            answer:
+              'Yii ñooy njëg yi ci butik yi :\n' +
+              products.slice(0, 5).map((p) => `• *${p.title}* : ${fmt(p.price)} (ci ${shopById.get(p.shopId)?.name ?? 'boutique'})`).join('\n'),
+          };
+        case 'STOCK':
+          if (!products.length) return { answer: 'Amul dara ci es-tok bi léegi.' };
+          return { answer: 'Li am ci es-tok léegi :\n' + products.slice(0, 5).map((p) => `• ${p.title}`).join('\n') };
+        case 'DELIVERY':
+          return { answer: 'Ci wàllu yóbbu bi, butik yi mën na la yóbbal ci Thiès, Mboro ak li ko wër. Waxal sa repère (marse, jàkka...).' };
+        case 'SHOPS':
+          return { answer: 'Butik yi ci JëndCiThiès :\n' + shops.map((s) => `• *${s.name}* — ${s.publicAddress ?? 'Thiès'}`).join('\n') };
+        default:
+          return { answer: 'Salaamalekum ! Wax ma sa laaj ci njëg yi, es-tok bi walla yóbbu bi.' };
+      }
+    }
+
+    switch (intent) {
+      case 'PRICES': {
+        if (!products.length) return { answer: "Je n'ai pas encore de prix à afficher. Les boutiques complètent leurs catalogues." };
+        return {
+          answer:
+            `Voici une sélection de prix réels chez nos commerçants :\n` +
+            products.slice(0, 5).map((p) => `• ${p.title} : ${fmt(p.price)} (${shopById.get(p.shopId)?.name ?? 'Boutique locale'})`).join('\n') +
+            `\n\nVous pouvez commander en ligne ou directement via WhatsApp avec la boutique.`,
+        };
+      }
+      case 'STOCK': {
+        if (!products.length) return { answer: 'Aucun produit en stock pour le moment. Revenez très bientôt !' };
+        return { answer: 'Produits actuellement disponibles :\n' + products.slice(0, 5).map((p) => `• ${p.title}`).join('\n') };
+      }
+      case 'DELIVERY': {
+        const addresses = shops.map((s) => `${s.name} (${s.publicAddress ?? 'Mboro/Thiès'})`).slice(0, 3);
+        return {
+          answer:
+            `Nous livrons à Mboro, Thiès et environs grâce à un système de repères locaux (pas besoin de numéro de rue).\n` +
+            `Quelques boutiques disponibles : ${addresses.join(', ')}.\n\n` +
+            `Les modes de paiement acceptés sont Wave, PayDunya et paiement à la livraison en espèces.`,
+        };
+      }
+      case 'SHOPS': {
+        if (!shops.length) return { answer: 'Aucune boutique active pour le moment.' };
+        return {
+          answer:
+            `Nos boutiques partenaires vérifiées :\n` +
+            shops.map((s) => `• ${s.name} — ${s.publicAddress ?? 'Thiès / Mboro'}${s.phone ? ` (${s.phone})` : ''}`).join('\n'),
+        };
+      }
+      default:
+        if (products.length > 0) {
+          return {
+            answer:
+              `Bienvenue sur JëndCiThiès !\n` +
+              `Quelques produits disponibles :\n` +
+              products.slice(0, 3).map((p) => `• ${p.title} (${fmt(p.price)})`).join('\n') +
+              `\n\nPosez-moi une question sur les prix, le stock, les boutiques ou la livraison.`,
+          };
+        }
+        return {
+          answer:
+            'Salaamalekum ! Je suis votre assistant bilingue (Français / Wolof). Je peux vous renseigner sur les prix, le stock des produits, les boutiques partenaires et les zones de livraison.',
+        };
+    }
+  }
 }

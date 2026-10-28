@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, ShoppingCart, User } from 'lucide-react';
+import { Menu, ShoppingCart, User, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartProvider';
 import { getToken, removeToken } from '@/lib/api';
@@ -74,6 +74,16 @@ export function Navbar() {
               )}
             >
               Boutiques
+            </Link>
+            <Link
+              href="/ai-assistant"
+              className={cn(
+                'flex items-center gap-1.5 text-sm font-semibold transition-colors',
+                pathname?.startsWith('/ai-assistant') ? 'text-[#E8632C] font-bold' : 'text-[#6B625A] hover:text-[#E8632C]',
+              )}
+            >
+              <Sparkles className="h-5 w-5 text-[#F2A93B]" />
+              Assistant IA
             </Link>
             <Link
               href="/cart"
@@ -159,6 +169,14 @@ export function Navbar() {
               className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
             >
               Boutiques
+            </Link>
+            <Link
+              href="/ai-assistant"
+              onClick={() => setIsOpen(false)}
+              className="block px-4 py-3 rounded-xl text-base font-medium text-[#6B625A] hover:bg-[#FBECE4] hover:text-[#E8632C] transition-colors flex items-center gap-2"
+            >
+              <Sparkles className="h-5 w-5 text-[#F2A93B]" />
+              <span>Assistant IA FR/Wolof</span>
             </Link>
             <Link
               href="/cart"

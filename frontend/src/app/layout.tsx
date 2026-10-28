@@ -4,6 +4,7 @@ import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { CartProvider } from '@/components/cart/CartProvider';
+import { AiChatWidget } from '@/components/ai/AiChatWidget';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -42,6 +43,7 @@ export default function RootLayout({
           <Navbar />
           <main className="pt-20 min-h-screen">{children}</main>
           <Footer />
+          <AiChatWidget />
         </CartProvider>
       </body>
     </html>
