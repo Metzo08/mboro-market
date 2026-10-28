@@ -87,7 +87,12 @@ export class ProductsService {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        include: { variants: true, category: true, media: true },
+        include: {
+          variants: true,
+          category: true,
+          media: true,
+          shop: { select: { id: true, name: true, phone: true, whatsapp: true, slug: true, publicAddress: true } },
+        },
         orderBy,
       }),
       this.prisma.product.count({ where }),

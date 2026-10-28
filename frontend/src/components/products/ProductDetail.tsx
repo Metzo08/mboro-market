@@ -32,10 +32,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
   };
 
   const handleWhatsAppOrder = () => {
+    const rawPhone = product.shop?.whatsapp || product.shop?.phone || '+221771234567';
+    let cleanPhone = rawPhone.replace(/\D/g, '');
+    if (cleanPhone.length === 9) cleanPhone = '221' + cleanPhone;
     const msg = encodeURIComponent(
       `Salam aleikoum ! Je souhaite commander : *${product.title}* (${formatPrice(Number(product.price))}) vu sur JëndCiThiès.\nLien : ${window.location.href}`
     );
-    window.open(`https://wa.me/221771234567?text=${msg}`, '_blank');
+    window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
   };
 
   const handleShare = () => {
@@ -44,7 +47,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         title: product.title,
         text: `Découvrez ${product.title} sur JëndCiThiès :`,
         url: window.location.href,
-      }).catch(() => {});
+      }).catch(() => { });
     } else {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
@@ -153,21 +156,19 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <div className="flex gap-6 border-b border-[#E2D6C4] mb-4">
             <button
               onClick={() => setTab('description')}
-              className={`pb-3 text-sm font-bold transition-colors border-b-2 ${
-                tab === 'description'
+              className={`pb-3 text-sm font-bold transition-colors border-b-2 ${tab === 'description'
                   ? 'border-[#E8632C] text-[#E8632C]'
                   : 'border-transparent text-[#6B625A] hover:text-[#2B2420]'
-              }`}
+                }`}
             >
               Description détaillée
             </button>
             <button
               onClick={() => setTab('details')}
-              className={`pb-3 text-sm font-bold transition-colors border-b-2 ${
-                tab === 'details'
+              className={`pb-3 text-sm font-bold transition-colors border-b-2 ${tab === 'details'
                   ? 'border-[#E8632C] text-[#E8632C]'
                   : 'border-transparent text-[#6B625A] hover:text-[#2B2420]'
-              }`}
+                }`}
             >
               Informations & Livraison
             </button>

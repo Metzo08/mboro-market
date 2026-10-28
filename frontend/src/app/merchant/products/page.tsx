@@ -149,11 +149,14 @@ export default function MerchantProducts() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des produits</h1>
-        <Button onClick={() => { setEditingId(null); setFormData({ title: '', slug: '', shortDescription: '', description: '', price: '', stock: '', categoryId: '' }); setShowForm(true); }} className="flex items-center gap-2">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion des produits</h1>
+          <p className="text-xs text-gray-500">{shop?.name || ''}</p>
+        </div>
+        <button onClick={() => { setEditingId(null); setFormData({ title: '', slug: '', shortDescription: '', description: '', price: '', stock: '', categoryId: '' }); setShowForm(true); }} className="jt-btn-primary px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm">
           <Plus className="h-4 w-4" />
           Ajouter un produit
-        </Button>
+        </button>
       </div>
 
       {error && (

@@ -18,20 +18,31 @@ export default function MerchantPosterPage() {
     }
 
     const token = getToken();
-    if (!token) {
-      window.location.href = '/login?callback=/merchant/poster';
+    if (token) {
+      api.get('/shops/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => {
+          setShop(res.data);
+        })
+        .catch(() => loadFallbackShop())
+        .finally(() => setLoading(false));
       return;
     }
-
-    api.get('/shops/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => {
-        setShop(res.data);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    loadFallbackShop();
   }, []);
+
+  const loadFallbackShop = () => {
+    api.get('/shops?limit=1')
+      .then((res) => {
+        const s = res.data.items?.[0] || res.data?.[0];
+        setShop(s || { name: 'Mboro Marché', slug: 'mboro-marche', phone: '+221 77 123 45 67' });
+      })
+      .catch(() => {
+        setShop({ name: 'Mboro Marché', slug: 'mboro-marche', phone: '+221 77 123 45 67' });
+      })
+      .finally(() => setLoading(false));
+  };
 
   const storeUrl = shop?.slug ? `${host}/shops/${shop.slug}` : host;
 

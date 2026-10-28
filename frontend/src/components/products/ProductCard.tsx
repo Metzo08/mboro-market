@@ -14,10 +14,14 @@ export function ProductCard({ product, theme = 'light' }: { product: Product; th
     Number(product.promotionalPrice) > 0 &&
     Number(product.promotionalPrice) < Number(product.price);
 
+  const rawPhone = product.shop?.whatsapp || product.shop?.phone || '+221771234567';
+  let cleanPhone = rawPhone.replace(/\D/g, '');
+  if (cleanPhone.length === 9) cleanPhone = '221' + cleanPhone;
+
   const waMsg = encodeURIComponent(
     `Salam aleikoum ! Je souhaite commander le produit *${product.title}* (${formatPrice(Number(product.price))}) vu sur JëndCiThiès. Est-il disponible ?`
   );
-  const waUrl = `https://wa.me/221771234567?text=${waMsg}`;
+  const waUrl = `https://wa.me/${cleanPhone}?text=${waMsg}`;
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-[#E2D6C4] bg-white shadow-sm jt-card-hover">

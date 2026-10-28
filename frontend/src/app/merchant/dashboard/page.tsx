@@ -142,17 +142,17 @@ export default function MerchantDashboard() {
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Actions rapides</h3>
           <div className="space-y-3">
-            <Link href="/merchant/products" className="flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
-              <span className="text-sm font-medium text-gray-900">Gérer les produits</span>
-              <span className="text-sm text-green-600">→</span>
+            <Link href="/merchant/poster" className="flex items-center justify-between p-3.5 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors">
+              <span className="text-sm font-bold text-amber-900">🖨️ Imprimer affiche QR Code</span>
+              <span className="text-sm text-amber-700">→</span>
             </Link>
-            <Link href="/merchant/orders" className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-              <span className="text-sm font-medium text-gray-900">Voir les commandes</span>
-              <span className="text-sm text-blue-600">→</span>
+            <Link href="/merchant/products" className="flex items-center justify-between p-3.5 bg-[#FBECE4] border border-[#E2D6C4] rounded-xl hover:bg-[#F5EDE1] transition-colors">
+              <span className="text-sm font-bold text-[#E8632C]">Gérer les produits</span>
+              <span className="text-sm text-[#E8632C]">→</span>
             </Link>
-            <Link href="/merchant/payments" className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-              <span className="text-sm font-medium text-gray-900">Voir les paiements</span>
-              <span className="text-sm text-purple-600">→</span>
+            <Link href="/merchant/orders" className="flex items-center justify-between p-3.5 bg-[#E6F4F2] border border-[#115E59]/20 rounded-xl hover:bg-teal-100 transition-colors">
+              <span className="text-sm font-bold text-[#115E59]">Voir les commandes</span>
+              <span className="text-sm text-[#115E59]">→</span>
             </Link>
           </div>
         </div>
