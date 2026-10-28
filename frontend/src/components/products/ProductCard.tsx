@@ -53,9 +53,9 @@ export function ProductCard({ product, theme = 'light' }: { product: Product; th
         </p>
 
         <div className="mt-2 flex items-baseline gap-2.5">
-          <p className={`text-base font-bold ${theme === 'dark' ? 'text-green-400' : 'text-green-700'}`}>{formatPrice(Number(product.price))}</p>
+          <p suppressHydrationWarning className={`text-base font-bold ${theme === 'dark' ? 'text-green-400' : 'text-green-700'}`}>{formatPrice(Number(product.price))}</p>
           {hasPromo && (
-            <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} line-through`}>{formatPrice(Number(product.promotionalPrice))}</p>
+            <p suppressHydrationWarning className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} line-through`}>{formatPrice(Number(product.promotionalPrice))}</p>
           )}
         </div>
 

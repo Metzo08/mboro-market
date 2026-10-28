@@ -47,11 +47,11 @@ export function ShopTabs({ shop, products }: ShopTabsProps) {
             {p.shortDescription || 'Produit local'}
           </p>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-base font-bold text-green-600">
+            <span suppressHydrationWarning className="text-base font-bold text-green-600">
               {formatPrice(Number(p.price))}
             </span>
             {hasPromo && (
-              <span className="text-xs text-gray-400 line-through">
+              <span suppressHydrationWarning className="text-xs text-gray-400 line-through">
                 {formatPrice(Number(p.promotionalPrice))}
               </span>
             )}

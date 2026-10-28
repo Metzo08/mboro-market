@@ -50,11 +50,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <p className="text-gray-500 mb-3">{product.shortDescription || product.description}</p>
 
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl font-bold text-green-600">
+            <span suppressHydrationWarning className="text-2xl font-bold text-green-600">
               {formatPrice(Number(product.price))}
             </span>
             {product.promotionalPrice && (
-              <span className="text-lg text-gray-500 line-through">
+              <span suppressHydrationWarning className="text-lg text-gray-500 line-through">
                 {formatPrice(Number(product.promotionalPrice))}
               </span>
             )}
