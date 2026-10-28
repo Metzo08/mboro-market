@@ -1,32 +1,88 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { formatPrice } from '@/lib/utils';
 import { Shop } from '@/types';
 import { shopImage } from '@/lib/images';
+import { Badge } from '@/components/ui/Badge';
+import { getShops } from '@/lib/server-api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+export const metadata = {
+  title: 'Boutiques — JëndCiThiès',
+  description: 'Découvrez les commerçants de Mboro et Thiès',
+};
 
-async function getShops(): Promise<Shop[]> {
+export default async function ShopsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string; category?: string; status?: string }>;
+}) {
+  // Next.js 16 : searchParams est une Promise, à awaiter
+  const sp = (await searchParams) || {};
+  const q = sp.q || '';
+  const category = sp.category || 'ALL';
+  const status = sp.status || 'ALL';
+
+  const params: Record<string, string> = {};
+  if (q) params.q = q;
+  if (category !== 'ALL') params.category = category;
+  if (status !== 'ALL') params.status = status;
+
+  let shops: Shop[] = [];
+  let total = 0;
+
   try {
-    const res = await fetch(`${API_URL}/shops`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.items || data || [];
+    const data = await getShops(params);
+    shops = data.items || data || [];
+    total = data.total || 0;
   } catch {
-    return [];
+    shops = [];
+    total = 0;
   }
-}
-
-export default async function ShopsPage() {
-  const shops: Shop[] = await getShops();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Nos boutiques</h1>
         <p className="text-gray-600">Découvrez les commerçants de Mboro et Thiès</p>
+      </div>
+
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 shadow-sm">
+        <form method="get" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div>
+            <label className="sr-only">Recherche</label>
+            <input
+              type="text"
+              name="q"
+              defaultValue={q}
+              placeholder="Rechercher par nom ou catégorie..."
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors dark:bg-gray-700 dark:text-gray-100"
+              aria-label="Rechercher des boutiques"
+            />
+          </div>
+          <div>
+            <select
+              name="category"
+              defaultValue={category}
+              className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
+            >
+              <option value="ALL">Toutes catégories</option>
+              <option value="restaurant">Restaurant</option>
+              <option value="artisanat">Artisanat</option>
+              <option value="alimentaire">Alimentaire</option>
+              <option value="beauté">Beauté</option>
+            </select>
+          </div>
+          <div>
+            <select
+              name="status"
+              defaultValue={status}
+              className="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 transition-colors"
+            >
+              <option value="ALL">Tout statut</option>
+              <option value="ACTIVE">Ouvert</option>
+              <option value="INACTIVE">Fermé</option>
+            </select>
+          </div>
+        </form>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -41,7 +97,7 @@ export default async function ShopsPage() {
                     '@type': 'Store',
                     name: shop.name,
                     description: shop.shortDescription || '',
-                    url: `http://localhost:3001/shops/${shop.slug}`,
+                    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/shops/${shop.slug}`,
                     address: {
                       '@type': 'PostalAddress',
                       addressLocality: 'Mboro',
@@ -63,11 +119,13 @@ export default async function ShopsPage() {
               </div>
               <div className="p-4">
                 <Link href={`/shops/${shop.slug}`} className="block">
-                  <h3 className="font-semibold text-gray-900 mb-1">{shop.name}</h3>
+                  <h3 className="font-semibold text-gray-900 line-clamp-1 mb-1">
+                    {shop.name}
+                  </h3>
                   <p className="text-sm text-gray-600 mb-3">{shop.shortDescription || 'Commerçant local à Thiès'}</p>
                   <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
                     <span className="flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full {shop.status === 'ACTIVE' ? 'bg-green-500' : 'bg-gray-400'}"></span>
+                      <span className={`w-1 h-1 rounded-full ${shop.status === 'ACTIVE' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                       {shop.status === 'ACTIVE' ? 'Ouvert' : 'Fermé'}
                     </span>
                   </div>

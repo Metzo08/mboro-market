@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, ShoppingCart, User, LogOut } from 'lucide-react';
+import { Menu, ShoppingCart, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartProvider';
 import { getToken, removeToken } from '@/lib/api';
@@ -37,29 +37,31 @@ export function Navbar() {
   };
 
   return (
-    <nav className="fixed w-full z-50 bg-white/95 backdrop-blur border-b border-gray-200">
+    <nav className="fixed w-full z-50 bg-white border-b border-green-50/60 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-full bg-[#1B7A3D] flex items-center justify-center text-white font-bold">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-700 to-green-600 flex items-center justify-center text-white font-bold shadow-lg">
                 J
               </div>
-              <span className="text-xl font-bold text-gray-900">
-                JëndCiThiès
-                <span className="block text-[10px] font-medium text-gray-500 -mt-1">
+              <div className="flex flex-col">
+                <span className="text-xl font-bold tracking-tight text-green-900">
+                  JëndCiThiès
+                </span>
+                <span className="text-[10px] font-medium text-green-600 uppercase tracking-wider">
                   by Sen-E-Carte
                 </span>
-              </span>
+              </div>
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-8">
             <Link
               href="/products"
               className={cn(
-                'text-sm font-medium transition-colors',
-                pathname === '/products' ? 'text-green-700' : 'text-gray-600 hover:text-gray-900',
+                'text-sm font-semibold transition-colors',
+                pathname === '/products' ? 'text-green-700' : 'text-gray-600 hover:text-green-700',
               )}
             >
               Produits
@@ -67,8 +69,8 @@ export function Navbar() {
             <Link
               href="/shops"
               className={cn(
-                'text-sm font-medium transition-colors',
-                pathname?.startsWith('/shops') ? 'text-green-700' : 'text-gray-600 hover:text-gray-900',
+                'text-sm font-semibold transition-colors',
+                pathname?.startsWith('/shops') ? 'text-green-700' : 'text-gray-600 hover:text-green-700',
               )}
             >
               Boutiques
@@ -76,14 +78,14 @@ export function Navbar() {
             <Link
               href="/cart"
               className={cn(
-                'flex items-center gap-1.5 text-sm font-medium transition-colors rounded-lg px-3 py-2',
-                pathname === '/cart' ? 'text-green-700 bg-green-50' : 'text-gray-600 hover:text-gray-900',
+                'flex items-center gap-2 text-sm font-semibold transition-colors',
+                pathname === '/cart' ? 'text-green-700' : 'text-gray-600 hover:text-green-700',
               )}
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-5 w-5" />
               Panier
               {itemCount > 0 && (
-                <span className="ml-0.5 min-w-5 h-5 px-1 inline-flex items-center justify-center rounded-full bg-[#F59E0B] text-white text-[11px] font-bold">
+                <span className="ml-1 min-w-[1.5rem] h-[1.5rem] px-1.5 inline-flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] font-bold">
                   {itemCount}
                 </span>
               )}
@@ -93,33 +95,22 @@ export function Navbar() {
                 {isMerchant ? (
                   <Link
                     href="/mon-commerce"
-                    className={cn(
-                      'flex items-center gap-1.5 text-sm font-medium transition-colors',
-                      pathname === '/mon-commerce' || pathname?.startsWith('/merchant')
-                        ? 'text-green-700'
-                        : 'text-gray-600 hover:text-gray-900',
-                    )}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-900 text-white text-sm font-medium hover:bg-green-800 transition-colors shadow-lg"
                   >
-                    <User className="h-4 w-4" />
-                    Mon commerce
+                    <User className="h-4 w-4" /> Mon commerce
                   </Link>
                 ) : (
                   <Link
                     href="/orders"
-                    className={cn(
-                      'flex items-center gap-1.5 text-sm font-medium transition-colors',
-                      pathname === '/orders' ? 'text-green-700' : 'text-gray-600 hover:text-gray-900',
-                    )}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-green-100 bg-white text-green-700 text-sm font-medium hover:bg-green-50 transition-colors"
                   >
-                    <User className="h-4 w-4" />
                     Mes commandes
                   </Link>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-red-100 bg-white text-red-600 text-sm font-medium hover:bg-red-50 transition-colors"
                 >
-                  <LogOut className="h-4 w-4" />
                   Déconnexion
                 </button>
               </>
@@ -127,17 +118,13 @@ export function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className={cn(
-                    'flex items-center gap-1.5 text-sm font-medium transition-colors',
-                    pathname === '/login' ? 'text-green-700' : 'text-gray-600 hover:text-gray-900',
-                  )}
+                  className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
-                  <User className="h-4 w-4" />
                   Connexion
                 </Link>
                 <Link
                   href="/register"
-                  className="jt-btn-accent !py-2 !px-4 text-sm"
+                  className="px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors shadow-lg"
                 >
                   Devenir commerçant
                 </Link>
@@ -157,19 +144,19 @@ export function Navbar() {
       </div>
 
       {isOpen && (
-        <div className="md:hidden bg-white border-b border-gray-100">
-          <div className="px-4 pt-2 pb-6 space-y-2">
+        <div className="md:hidden border-b bg-white/95 backdrop-blur">
+          <div className="px-4 pt-2 pb-6 space-y-1">
             <Link
               href="/products"
               onClick={() => setIsOpen(false)}
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+              className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
             >
               Produits
             </Link>
             <Link
               href="/shops"
               onClick={() => setIsOpen(false)}
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+              className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
             >
               Boutiques
             </Link>
@@ -177,34 +164,35 @@ export function Navbar() {
               href="/cart"
               onClick={() => setIsOpen(false)}
               className={cn(
-                'block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50',
-                itemCount > 0 ? 'bg-green-50' : '',
+                'block px-4 py-3 rounded-xl text-base font-medium transition-colors',
+                itemCount > 0 ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50',
               )}
             >
               Panier {itemCount > 0 && <span className="ml-2 text-xs font-bold text-green-600">{itemCount}</span>}
             </Link>
+            <hr className="border-green-50 my-3" />
             {isLoggedIn ? (
               <>
                 {isMerchant ? (
                   <Link
                     href="/mon-commerce"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
                   >
                     Mon commerce
                   </Link>
-                 ) : (
+                ) : (
                   <Link
                     href="/orders"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                    className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
                   >
                     Mes commandes
                   </Link>
                 )}
                 <button
                   onClick={() => { handleLogout(); setIsOpen(false); }}
-                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 text-center"
+                  className="block w-full px-4 py-3 rounded-xl text-base font-medium text-red-600 hover:bg-red-50 text-center transition-colors"
                 >
                   Déconnexion
                 </button>
@@ -214,14 +202,14 @@ export function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                  className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
                 >
                   Connexion
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setIsOpen(false)}
-                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-white bg-[#F59E0B] hover:bg-amber-600 text-center"
+                  className="block w-full px-4 py-3 rounded-xl text-base font-medium text-white bg-amber-500 hover:bg-amber-600 text-center transition-colors"
                 >
                   Devenir commerçant
                 </Link>

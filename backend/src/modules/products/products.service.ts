@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto, UpdateProductDto } from './dto';
+import { expandSearchQuery } from '../../common/search/local-synonyms';
 
 @Injectable()
 export class ProductsService {
@@ -45,7 +46,10 @@ export class ProductsService {
     });
   }
 
-  async findAll(shopId?: string, categoryId?: string, page: number = 1, limit: number = 20, q?: string, slug?: string) {
+  async findAll(
+    shopId?: string, categoryId?: string, page: number = 1, limit: number = 20,
+    q?: string, slug?: string, sortBy?: string, sortOrder: 'asc' | 'desc' = 'desc',
+  ) {
     const where: any = { status: 'active' };
     if (shopId) where.shopId = shopId;
     if (slug) where.slug = slug;
@@ -59,19 +63,32 @@ export class ProductsService {
       else where.categoryId = categoryId;
     }
     if (q) {
-      where.OR = [
-        { title: { contains: q, mode: 'insensitive' } },
-        { shortDescription: { contains: q, mode: 'insensitive' } },
-        { description: { contains: q, mode: 'insensitive' } },
-      ];
+      const searchTerms = expandSearchQuery(q);
+      const orClauses: any[] = [];
+      for (const term of searchTerms) {
+        orClauses.push(
+          { title: { contains: term, mode: 'insensitive' } },
+          { shortDescription: { contains: term, mode: 'insensitive' } },
+          { description: { contains: term, mode: 'insensitive' } },
+        );
+      }
+      where.OR = orClauses;
     }
+    // Tri : prix, createdAt (défaut), title — validate pour éviter l'injection
+    const validSort: Record<string, any> = {
+      price: { price: sortOrder },
+      title: { title: sortOrder },
+      createdAt: { createdAt: sortOrder },
+      stock: { stock: sortOrder },
+    };
+    const orderBy = validSort[sortBy || 'createdAt'] || { createdAt: sortOrder };
     const [items, total] = await this.prisma.$transaction([
       this.prisma.product.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
         include: { variants: true, category: true, media: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy,
       }),
       this.prisma.product.count({ where }),
     ]);

@@ -7,16 +7,16 @@ import { productImage } from '@/lib/images';
 import { Product } from '@/types';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, theme = 'light' }: { product: Product; theme?: 'light' | 'dark' }) {
   const hasPromo =
     product.promotionalPrice != null &&
     Number(product.promotionalPrice) > 0 &&
     Number(product.promotionalPrice) < Number(product.price);
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <div className={`group flex flex-col overflow-hidden rounded-2xl shadow-sm jt-card-hover ${theme === 'dark' ? 'border-gray-800 bg-gray-800' : 'border-green-50 bg-white'}`}>
       <Link href={`/products/${product.slug}`} className="block">
-        <div className="relative h-48 overflow-hidden bg-gray-100">
+        <div className={`relative h-48 overflow-hidden ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
           <Image
             src={productImage(product)}
             alt={product.title}
@@ -44,18 +44,18 @@ export function ProductCard({ product }: { product: Product }) {
 
       <div className="flex flex-col flex-grow p-5">
         <Link href={`/products/${product.slug}`} className="block mb-1.5">
-          <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-green-700 transition-colors">
+          <h3 className={`font-semibold line-clamp-2 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             {product.title}
           </h3>
         </Link>
-        <p className="truncate text-xs text-gray-500">
+        <p className={`truncate text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
           {product.shortDescription || 'Produit local — Mboro · Thiès'}
         </p>
 
         <div className="mt-2 flex items-baseline gap-2.5">
-          <p className="text-base font-bold text-green-700">{formatPrice(Number(product.price))} FCFA</p>
+          <p className={`text-base font-bold ${theme === 'dark' ? 'text-green-400' : 'text-green-700'}`}>{formatPrice(Number(product.price))}</p>
           {hasPromo && (
-            <p className="text-xs text-gray-400 line-through">{formatPrice(Number(product.promotionalPrice))} FCFA</p>
+            <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} line-through`}>{formatPrice(Number(product.promotionalPrice))}</p>
           )}
         </div>
 

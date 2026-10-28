@@ -35,9 +35,13 @@ export class ProductsController {
     @Query('page') page = 1,
     @Query('limit') limit = 20,
     @Query('q') q?: string,
+    @Query('search') search?: string,
     @Query('slug') slug?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder = 'desc',
   ) {
-    return this.service.findAll(shopId, categoryId, +page, +limit, q, slug);
+    // Accepte `search` (utilisé par le frontend) et `q` (API) comme alias
+    return this.service.findAll(shopId, categoryId, +page, +limit, q || search, slug, sortBy, sortOrder as 'asc' | 'desc');
   }
 
   @Public()

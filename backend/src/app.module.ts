@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaService } from './prisma/prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -13,6 +15,7 @@ import { DeliveryModule } from './modules/delivery/delivery.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { MediaModule } from './modules/media/media.module';
 
 @Module({
   imports: [
@@ -20,6 +23,15 @@ import { AdminModule } from './modules/admin/admin.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    // Rate limiting global — exigence 13.1 du cahier des charges
+    // (OTP, login, recherche, checkout, webhooks, IA)
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: Number(process.env.RATE_LIMIT_TTL_MS) || 60_000,
+        limit: Number(process.env.RATE_LIMIT_MAX) || 100,
+      },
+    ]),
     AuthModule,
     OrganizationsModule,
     ShopsModule,
@@ -32,7 +44,8 @@ import { AdminModule } from './modules/admin/admin.module';
     NotificationsModule,
     AiModule,
     AdminModule,
+    MediaModule,
   ],
-  providers: [PrismaService],
+  providers: [PrismaService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

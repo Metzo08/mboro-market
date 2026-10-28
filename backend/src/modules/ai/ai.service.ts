@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateConversationDto, SendMessageDto } from './dto';
+import { buildWolofResponse } from '../../common/ai/wolof-nlg';
 
 // Mini-lexique FR→WO (CDC §9 : salutations, prix, stock, commande, livraison)
 // Le vrai corpus Wolof complet vit en table Translation (isValidated=true)
@@ -110,40 +111,59 @@ export class AiService {
       take: 20,
       orderBy: { createdAt: 'desc' },
     });
+    const mappedProducts = products.map((p) => ({
+      title: p.title,
+      price: Number(p.price),
+      stock: p.stock,
+    }));
     const fmt = (n: any) =>
       new Intl.NumberFormat('fr-SN', { maximumFractionDigits: 0 }).format(Number(n)) + ' FCFA';
 
-    let fr: string;
-    if (/prix|njeg|combien|ñett|tarif/.test(q)) {
-      if (products.length === 0) fr = `Donnée manquante : aucun produit publié pour ${shop.name}.`;
-      else {
+    // Détection d'intention
+    let intent = 'DEFAULT';
+    if (/prix|njeg|njëg|combien|ñaata|tarif/.test(q)) intent = 'PRICES';
+    else if (/stock|dispo|reste|am na|jeex|es-tok/.test(q)) intent = 'STOCK';
+    else if (/livr|yóbbu|adresse|quartier|repère|repere/.test(q)) intent = 'DELIVERY';
+    else if (/bonjour|salaam|salut|nanga|dalal/.test(q)) intent = 'GREETING';
+    else if (/creer|créer|publier|annonce|bindal/.test(q)) intent = 'DRAFT_PRODUCT';
+
+    // Si la langue demandée ou détectée est le Wolof, utiliser le moteur NLG wolof naturel
+    if (lang === 'WO') {
+      return buildWolofResponse(intent, {
+        shopName: shop.name,
+        products: mappedProducts,
+      });
+    }
+
+    // Réponse en Français
+    switch (intent) {
+      case 'PRICES': {
+        if (products.length === 0) return `Donnée manquante : aucun produit publié pour ${shop.name}.`;
         const lines = products.slice(0, 5).map((p) => `- ${p.title} : ${fmt(p.price)}`).join('\n');
-        fr = `Voici les prix chez ${shop.name} :\n${lines}`;
+        return `Voici les prix chez ${shop.name} :\n${lines}`;
       }
-    } else if (/stock|dispo|reste|am/.test(q)) {
-      if (products.length === 0) fr = 'Donnée manquante : catalogue vide.';
-      else {
-        const lines = products.slice(0, 5).map((p) => `- ${p.title} : ${p.stock} en stock`).join('\n');
-        fr = `Disponibilités :\n${lines}`;
+      case 'STOCK': {
+        if (products.length === 0) return 'Donnée manquante : catalogue vide.';
+        const lines = products.slice(0, 5).map((p) => `- ${p.title} : ${p.stock > 0 ? `${p.stock} en stock` : 'en rupture'}`).join('\n');
+        return `Disponibilités actuelles :\n${lines}`;
       }
-    } else if (/livr|yóbbu|adresse|quartier/.test(q)) {
-      fr = shop.publicAddress
-        ? `${shop.name} : ${shop.publicAddress}. Contact : ${shop.phone || 'voir la boutique'}.`
-        : 'Donnée manquante : adresse de livraison non renseignée par la boutique.';
-    } else if (/horaire|ouvert|heure|oubi/.test(q)) {
-      const h = (shop.openingHours as any)?.lundi || (shop.openingHours as any)?.monday;
-      fr = h ? `Horaires : ${JSON.stringify(shop.openingHours)}.` : 'Donnée manquante : horaires non renseignés.';
-    } else if (/bonjour|salaam|salut|nanga/.test(q)) {
-      fr = `Salaamalekum ! Bienvenue chez ${shop.name}. Posez votre question sur nos prix, le stock ou la livraison.`;
-    } else {
-      if (products.length === 0) fr = `Donnée manquante : je n'ai pas cette information pour ${shop.name}.`;
-      else {
+      case 'DELIVERY': {
+        return shop.publicAddress
+          ? `${shop.name} livre à Thiès, Mboro et environs. Adresse de référence : ${shop.publicAddress}. Contact direct : ${shop.phone || shop.whatsapp || 'voir la boutique'}.`
+          : 'Donnée manquante : adresse de livraison non renseignée par la boutique.';
+      }
+      case 'GREETING': {
+        return `Salaamalekum ! Bienvenue chez ${shop.name}. Je suis votre assistant bilingue (Français / Wolof). Posez vos questions sur les prix, les stocks ou les livraisons.`;
+      }
+      case 'DRAFT_PRODUCT': {
+        return `Je peux vous aider à rédiger votre annonce. Donnez-moi simplement le nom du produit, son prix en FCFA et la quantité disponible.`;
+      }
+      default: {
+        if (products.length === 0) return `Donnée manquante : je n'ai pas cette information pour ${shop.name}.`;
         const lines = products.slice(0, 3).map((p) => `- ${p.title} (${fmt(p.price)})`).join('\n');
-        fr = `Chez ${shop.name}, voici ce que je peux confirmer :\n${lines}\nPrécisez : prix, stock ou livraison ?`;
+        return `Chez ${shop.name}, voici ce que je peux confirmer :\n${lines}\nPrécisez votre demande : prix, stock ou livraison ?`;
       }
     }
-    if (lang === 'WO') return toWolof(fr);
-    return fr;
   }
 
   async getMessages(conversationId: string) {

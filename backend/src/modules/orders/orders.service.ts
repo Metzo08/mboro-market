@@ -42,6 +42,9 @@ export class OrdersService {
     if (!dto.items || dto.items.length === 0) {
       throw new BadRequestException('La commande doit contenir au moins un article');
     }
+    // Anti-usurpation (ORD-011) : userId = utilisateur authentifié, jamais le client
+    const customerId = actor?.id ?? dto.userId;
+    if (!customerId) throw new BadRequestException('Utilisateur non identifié');
 
     let subtotal = 0;
     const items: any[] = [];
@@ -91,7 +94,7 @@ export class OrdersService {
       const order = await tx.order.create({
         data: {
           orderNumber,
-          userId: dto.userId,
+          userId: customerId,
           shopId: dto.shopId,
           subtotal,
           discount,
@@ -110,7 +113,7 @@ export class OrdersService {
           statusHistory: {
             create: {
               status: 'PENDING',
-              actorId: dto.userId,
+              actorId: customerId,
               actorType: 'customer',
               reason: 'Commande créée',
             },

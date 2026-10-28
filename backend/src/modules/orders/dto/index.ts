@@ -33,8 +33,10 @@ export class OrderItemDto {
 }
 
 export class CreateOrderDto {
+  // Optionnel : le contrôleur injecte userId = utilisateur connecté (ORD-011)
+  @IsOptional()
   @IsUUID()
-  userId: string;
+  userId?: string;
 
   @IsUUID()
   shopId: string;

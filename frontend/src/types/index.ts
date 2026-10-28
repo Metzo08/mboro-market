@@ -17,10 +17,16 @@ export interface Shop {
   phone?: string;
   email?: string;
   whatsapp?: string;
+  website?: string;
   publicAddress?: string;
   status: string;
+  verificationStatus: string;
   isActive: boolean;
+  openingHours?: Record<string, { open?: string; close?: string }>;
+  acceptedPaymentMethods?: string[];
   createdAt: string;
+  updatedAt?: string;
+  mediaAssets?: Array<{ id: string; path: string; type: string; altText?: string }>;
 }
 
 export interface Category {
@@ -57,6 +63,7 @@ export interface Product {
   updatedAt: string;
   shop?: Shop;
   category?: Category;
+  media?: Array<{ id: string; path: string; type: string; altText?: string }>;
 }
 
 export interface Order {
@@ -94,4 +101,10 @@ export interface RegisterDto {
   phone: string;
   email?: string;
   role?: 'customer' | 'merchant';
+}
+
+export interface CartItem {
+  product: Product;
+  variantId?: string;
+  quantity: number;
 }

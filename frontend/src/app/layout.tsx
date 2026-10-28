@@ -8,6 +8,7 @@ import { CartProvider } from '@/components/cart/CartProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://jendcithies.sn'),
   title: {
     default: 'JëndCiThiès — Commerce local à Thiès | by Sen-E-Carte',
     template: '%s | JëndCiThiès',
@@ -21,6 +22,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'fr_SN',
     siteName: 'JëndCiThiès',
+    url: 'https://jendcithies.sn',
+    images: [{ url: '/favicon.svg', width: 100, height: 100 }],
   },
 };
 
@@ -30,7 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      </head>
       <body className={`${inter.className} antialiased`}>
         <CartProvider>
           <Navbar />

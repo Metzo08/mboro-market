@@ -84,14 +84,17 @@ export default function CartPage() {
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
-            <Button className="w-full" onClick={() => clear()}>
-              Vider le panier
-            </Button>
-            <Button className="w-full mt-3" onClick={() => {
-              // Rediriger vers checkout
+            <Button className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold" onClick={() => {
               window.location.href = '/checkout';
             }}>
-              Passer la commande
+              Passer la commande →
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full mt-2 text-xs text-gray-500 hover:text-red-600"
+              onClick={() => clear()}
+            >
+              Vider le panier
             </Button>
           </div>
         </div>

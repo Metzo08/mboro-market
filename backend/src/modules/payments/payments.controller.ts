@@ -30,6 +30,10 @@ export class PaymentsController {
     const signature =
       req.headers['x-webhook-signature'] || req.headers['x-paydunya-signature'] || req.headers['x-wave-signature'];
     const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(payload ?? {});
+    // CDC §10.3 : dispatcher Wave vers le handler spécialisé
+    if (provider === 'wave') {
+      return this.service.processWaveWebhook(payload);
+    }
     return this.service.handleWebhook(provider, payload, signature, rawBody);
   }
 

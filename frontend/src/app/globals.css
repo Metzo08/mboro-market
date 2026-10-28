@@ -2,16 +2,29 @@
 
 /* Design System JëndCiThiès — CDC §2-3 (Sen-E-Carte) */
 :root {
+  /* Palette principale — Vert sénégalais */
+  --jt-green-950: #0f3d1f;
   --jt-green-900: #14532d;
+  --jt-green-800: #166534;
   --jt-green-700: #1b7a3d;
-  --jt-green-600: #1e8a46;
+  --jt-green-600: #228b4a;
+  --jt-green-500: #4ade80;
+  --jt-green-100: #dcfce7;
   --jt-green-50: #f0fdf4;
-  --jt-orange-500: #f59e0b;
-  --jt-orange-600: #d97706;
+
+  /* Accents */
+  --jt-amber-500: #f59e0b;
+  --jt-amber-600: #d97706;
+  --jt-amber-100: #fef3c7;
   --jt-terracotta: #c2410c;
-  --jt-sand: #faf6ef;
-  --jt-ink: #1a2e22;
-  --jt-muted: #5b6b60;
+
+  /* Neutres */
+  --jt-sand: #faf6f0;
+  --jt-ink: #142318;
+  --jt-muted: #6b7a6d;
+  --jt-gray-100: #f3f4f6;
+  --jt-border: #e5e7eb;
+
   --background: #ffffff;
   --foreground: var(--jt-ink);
 }
@@ -19,17 +32,65 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, monospace;
+  --color-green-950: var(--jt-green-950);
+  --color-green-900: var(--jt-green-900);
+  --color-green-800: var(--jt-green-800);
+  --color-green-700: var(--jt-green-700);
+  --color-green-600: var(--jt-green-600);
+  --color-green-500: var(--jt-green-500);
+  --color-green-100: var(--jt-green-100);
+  --color-green-50: var(--jt-green-50);
+  --color-amber-500: var(--jt-amber-500);
+  --color-amber-600: var(--jt-amber-600);
+  --color-amber-100: var(--jt-amber-100);
+  --color-terracotta: var(--jt-terracotta);
+  --color-sand: var(--jt-sand);
+  --color-ink: var(--jt-ink);
+  --color-muted: var(--jt-muted);
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Classes utilitaires marque */
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGreen {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(27, 122, 61, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(27, 122, 61, 0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-pulse-green {
+  animation: pulseGreen 2s infinite;
+}
+
+/* ===== Classes utilitaires marque ===== */
 .jt-btn-primary {
   background: var(--jt-green-700);
   color: #fff;
@@ -38,16 +99,53 @@ body {
   background: var(--jt-green-900);
 }
 .jt-btn-accent {
-  background: var(--jt-orange-500);
-  color: #1a2e22;
+  background: var(--jt-amber-500);
+  color: #142318;
 }
 .jt-btn-accent:hover {
-  background: var(--jt-orange-600);
+  background: var(--jt-amber-600);
   color: #fff;
 }
-.jt-hero {
-  background: linear-gradient(135deg, var(--jt-green-900) 0%, var(--jt-green-700) 60%, #2ca25c 100%);
+.jt-btn-secondary {
+  background: var(--jt-amber-500);
+  color: #142318;
 }
-.jt-sand {
+.jt-btn-secondary:hover {
+  background: var(--jt-amber-600);
+  color: #fff;
+}
+.jt-btn-outline {
+  background: transparent;
+  color: var(--jt-green-700);
+  border: 2px solid var(--jt-green-700);
+}
+.jt-btn-outline:hover {
+  background: var(--jt-green-700);
+  color: #fff;
+}
+.jt-sand-bg {
   background: var(--jt-sand);
+}
+.jt-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.jt-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--jt-green-300);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--jt-green-500);
 }

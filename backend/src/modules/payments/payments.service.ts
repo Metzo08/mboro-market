@@ -9,6 +9,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ShopsService } from '../shops/shops.service';
 import { InitializePaymentDto } from './dto';
+import { InitializeWavePaymentDto } from './dto/wave-payment.initialize.dto';
 
 export interface CheckoutSession {
   checkoutUrl: string | null;
@@ -445,5 +446,60 @@ export class PaymentsService {
       where: { id },
       data: { status: 'REFUNDED' },
     });
+  }
+  
+  async processWaveWebhook(payload: any) {
+    // CDC §10.3 : traiter le webhook checkout.session.payment_completed de Wave
+    if (!payload?.type || payload.type !== "checkout.session.payment_completed") {
+      throw new BadRequestException("Evenement webhook Wave inattendu");
+    }
+    const { data, object } = payload;
+    const session = data?.object ?? data;
+    const reference = session?.metadata?.reference ?? session?.id;
+    const amount = session?.amount_total ? Number(session.amount_total) / 100 : null;
+    const paymentIntentId = session?.payment_intent;
+    const status = session?.status === "completed" ? "SUCCEEDED" : session?.status;
+    
+    // Trouver la transaction par le reference ou payment_intent
+    const transaction = await this.prisma.transaction.findFirst({
+      where: {
+        OR: [
+          { providerTransactionId: paymentIntentId as any },
+          { webhookId: session.id }
+        ]
+      }
+    });
+    
+    if (!transaction) {
+      throw new NotFoundException("Transaction introuvable pour le payment_intent: " + paymentIntentId);
+    }
+    
+    // Éviter le double-traitement
+    if (transaction.status === "SUCCEEDED") {
+      return { status: "already_processed" };
+    }
+    
+    // Mettre à jour la transaction
+    await this.prisma.transaction.update({
+      where: { id: transaction.id },
+      data: {
+        status: status as any,
+        
+        providerTransactionId: paymentIntentId ? (paymentIntentId as any) : transaction.providerTransactionId,
+        webhookId: session.id,
+        verifiedAt: new Date()
+      }
+    });
+    
+    // Mettre à jour le statut de la commande si elle existe
+    if (transaction.orderId) {
+      const order = await this.prisma.order.findUnique({ where: { id: transaction.orderId } });
+      await this.prisma.order.update({
+        where: { id: transaction.orderId },
+        data: { paymentStatus: status === "SUCCEEDED" ? "SUCCEEDED" : (order?.paymentStatus || "PENDING") }
+      });
+    }
+    
+    return { status };
   }
 }

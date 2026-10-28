@@ -34,8 +34,12 @@ export class ShopsController {
     @Query('page') page = 1,
     @Query('limit') limit = 20,
     @Query('slug') slug?: string,
+    @Query('search') search?: string,
+    @Query('q') q?: string,
+    @Query('type') type?: string,
   ) {
-    return this.service.findAll(+page, +limit, slug);
+    // Accepte `search` (frontend) et `q` (API) comme alias
+    return this.service.findAll(+page, +limit, slug, search || q, type);
   }
 
   // IMPORTANT : doit être déclare AVANT `@Get(':id')`, sinon la route

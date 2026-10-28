@@ -12,6 +12,7 @@ export default function MerchantDashboard() {
     totalRevenue: 0,
     pendingOrders: 0,
   });
+  const [orders, setOrders] = useState<any[]>([]);
   const [shop, setShop] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,16 +35,17 @@ export default function MerchantDashboard() {
           api.get('/orders', { params: { shopId } }).catch(() => ({ data: { items: [] } })),
         ]);
         const products = productsRes.data.items || [];
-        const orders = ordersRes.data.items || [];
-        const revenue = orders.reduce(
+        const fetchedOrders = ordersRes.data.items || [];
+        const revenue = fetchedOrders.reduce(
           (sum: number, o: any) => sum + Number(o.total),
           0,
         );
+        setOrders(fetchedOrders);
         setStats({
           totalProducts: products.length,
-          totalOrders: orders.length,
+          totalOrders: fetchedOrders.length,
           totalRevenue: revenue,
-          pendingOrders: orders.filter((o: any) => o.status === 'PENDING').length,
+          pendingOrders: fetchedOrders.filter((o: any) => o.status === 'PENDING').length,
         });
       } catch (err: any) {
         setStats({
@@ -71,9 +73,17 @@ export default function MerchantDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-        <p className="text-gray-600">Gérez votre boutique Mboro Marché</p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
+          <p className="text-gray-600">Gérez votre boutique {shop?.name || ''}</p>
+        </div>
+        <Link
+          href="/merchant/poster"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-all"
+        >
+          <span>🖨️ Affiche QR Code de comptoir</span>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -105,10 +115,21 @@ export default function MerchantDashboard() {
               </Link>
             </div>
             <div className="divide-y divide-gray-200">
-              {stats.totalOrders > 0 ? (
-                <div className="p-6 text-center text-gray-500">
-                  Aucune commande récente.
-                </div>
+              {orders.length > 0 ? (
+                orders.slice(0, 5).map((order: any) => (
+                  <div key={order.id} className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm text-gray-900">#{order.id.slice(-8)}</p>
+                      <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-sm text-gray-900">{formatPrice(Number(order.total))}</p>
+                      <span className={`text-xs px-2 py-1 rounded-full ${order.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : order.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                        {order.status === 'PENDING' ? 'En attente' : order.status === 'PAID' ? 'Payée' : order.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
               ) : (
                 <div className="p-6 text-center text-gray-500">
                   Aucune commande pour le moment.

@@ -48,3 +48,17 @@ prisma/migrations/*.sql
 
 # Misc
 *.pem
+
+# Temporary & scratch files
+tmp/
+*.tmp
+_design.*
+_fig_*
+_cdn_*
+build_out*
+test.txt
+fix*.js
+temp_*.ps1
+backend/uploads/*
+!backend/uploads/.gitkeep
+.kilo/

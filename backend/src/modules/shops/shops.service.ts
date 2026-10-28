@@ -85,9 +85,18 @@ export class ShopsService {
     });
   }
 
-  async findAll(page: number, limit: number, slug?: string) {
+  async findAll(page: number, limit: number, slug?: string, search?: string, type?: string) {
     const where: any = {};
     if (slug) where.slug = slug;
+    if (type) where.type = type;
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { shortDescription: { contains: search, mode: 'insensitive' } },
+        { publicAddress: { contains: search, mode: 'insensitive' } },
+      ];
+    }
     const [items, total] = await this.prisma.$transaction([
       this.prisma.shop.findMany({
         where,
