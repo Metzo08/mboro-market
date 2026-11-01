@@ -42,6 +42,7 @@ export class AiController {
   @Throttle({ default: { limit: 15, ttl: 60_000 } })
   @Post('public-ask')
   async publicAsk(@Body() body: { question: string; language?: 'FR' | 'WO' | 'EN' }) {
-    return this.service.publicAsk(body.question, body.language || 'FR');
+    const lang = (body.language || 'FR').toUpperCase() === 'WO' ? 'WO' : 'FR';
+    return this.service.publicAsk(body.question, lang);
   }
 }
