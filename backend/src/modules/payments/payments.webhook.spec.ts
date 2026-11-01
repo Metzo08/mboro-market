@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { ForbiddenException } from '@nestjs/common';
 import { PaymentsService, WaveProvider, PaydunyaProvider } from './payments.service';
+import { SandboxProvider } from './sandbox.provider';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ShopsService } from '../shops/shops.service';
 
@@ -19,6 +20,7 @@ describe('PaymentsService — webhooks', () => {
         // Providers de paiement non configurés → session sandbox (aucun appel HTTP)
         { provide: WaveProvider, useValue: { createCheckout: jest.fn() } },
         { provide: PaydunyaProvider, useValue: { createCheckout: jest.fn() } },
+        { provide: SandboxProvider, useValue: { createCheckout: jest.fn(), signPayload: jest.fn() } },
         // Réglages boutique (déchiffrés) — aucun réglage par défaut
         { provide: ShopsService, useValue: { getPaymentSettings: jest.fn().mockResolvedValue(null) } },
       ],

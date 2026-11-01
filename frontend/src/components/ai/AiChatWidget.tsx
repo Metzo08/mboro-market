@@ -12,7 +12,7 @@ import { X, Send, Sparkles, Loader2 } from 'lucide-react';
 export function AiChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [lang, setLang] = useState<'FR' | 'WO'>('FR');
-  const [messages, setMessages] = useState<Array<{ role: 'USER' | 'ASSISTANT'; content: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ role: 'USER' | 'ASSISTANT'; content: string; products?: any[] }>>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -55,7 +55,7 @@ export function AiChatWidget() {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: 'ASSISTANT', content: data.answer }]);
+      setMessages((prev) => [...prev, { role: 'ASSISTANT', content: data.answer, products: data.products }]);
     } catch (err: any) {
       setError(err.message || 'Erreur de connexion à l\'assistant');
     } finally {
@@ -131,13 +131,30 @@ export function AiChatWidget() {
                 className={`flex ${m.role === 'USER' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap ${
-                    m.role === 'USER'
+                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap ${m.role === 'USER'
                       ? 'bg-[#E8632C] text-white rounded-br-sm'
                       : 'bg-[#F5EDE1] text-[#2B2420] rounded-bl-sm border border-[#E2D6C4]'
-                  }`}
+                    }`}
                 >
                   {m.content}
+                  {/* Produits cliquables retournés par l'IA */}
+                  {m.products && m.products.length > 0 && (
+                    <div className="mt-2.5 space-y-1.5">
+                      {m.products.map((p: any) => (
+                        <Link
+                          key={p.id}
+                          href={`/products/${p.slug}`}
+                          className="block px-2.5 py-1.5 rounded-lg bg-white border border-[#E2D6C4] hover:border-[#E8632C] transition-colors"
+                        >
+                          <span className="block text-[11px] font-bold text-[#2B2420] truncate">{p.title}</span>
+                          <span className="flex items-center justify-between text-[10px]">
+                            <span className="text-[#E8632C] font-bold">{p.priceLabel}</span>
+                            <span className="text-[#6B625A] truncate max-w-[90px]">{p.shopName}</span>
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

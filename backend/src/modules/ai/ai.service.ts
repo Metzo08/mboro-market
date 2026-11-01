@@ -174,104 +174,185 @@ export class AiService {
   }
 
   /**
-   * Réponse publique aux visiteurs anonymes du widget IA.
-   * Agrège les données des boutiques actives (prix, produits, livraison)
-   * sans jamais révéler de données privées.
+   * Réponse publique avancée : recherche produit par nom (FR + Wolof),
+   * intentions enrichies, produits liés pour l'UI cliquable.
    */
-  async publicAsk(question: string, lang: string): Promise<{ answer: string }> {
-    const q = question.toLowerCase();
+  async publicAsk(
+    question: string,
+    lang: string,
+  ): Promise<{ answer: string; products?: any[]; query?: string }> {
+    const q = question.toLowerCase().trim();
 
-    // Charger jusqu'à 3 boutiques actives + quelques produits réels
     const shops = await this.prisma.shop.findMany({
       where: { status: 'ACTIVE' },
       take: 5,
-      select: { id: true, name: true, publicAddress: true, phone: true, whatsapp: true, shortDescription: true },
+      select: { id: true, name: true, slug: true, publicAddress: true, phone: true, whatsapp: true, shortDescription: true },
     });
-    const products = await this.prisma.product.findMany({
+
+    // Dictionnaire wolof → français pour la recherche produit (SRCH-002)
+    const WO_TO_FR: Record<string, string[]> = {
+      ceeb: ['riz', 'basmati', 'thieb'],
+      yapp: ['viande', 'boeuf', 'mouton', 'porc', 'poulet'],
+      soble: ['oignon'],
+      kaani: ['piment'],
+      jen: ['poisson'],
+      diw: ['huile'],
+      xorom: ['sel'],
+      meew: ['lait'],
+      dina: ['pain'],
+      baana: ['banane'],
+      mango: ['mangue'],
+      ceebu: ['riz', 'thieb'],
+    };
+
+    // 1. Recherche produit par nom/mot-clé (y compris wolof)
+    const searchTerms = new Set<string>([q]);
+    for (const [wo, frs] of Object.entries(WO_TO_FR)) {
+      if (q.includes(wo)) frs.forEach((fr) => searchTerms.add(fr));
+    }
+    const stopWords = ['prix', 'combien', 'stock', 'dispo', 'de', 'du', 'la', 'les', 'des', 'produits', 'produit', 'quel', 'quelle', 'bonjour', 'salaam', 'salut', 'mais'];
+    const meaningful = [...searchTerms].filter((t) => t.length > 2 && !stopWords.includes(t));
+
+    let matchedProducts: any[] = [];
+    if (meaningful.length) {
+      const orClauses = meaningful.flatMap((t) => [
+        { title: { contains: t, mode: 'insensitive' as const } },
+        { shortDescription: { contains: t, mode: 'insensitive' as const } },
+      ]);
+      matchedProducts = await this.prisma.product.findMany({
+        where: { status: 'active', OR: orClauses },
+        take: 6,
+        select: { id: true, title: true, slug: true, price: true, shopId: true, stock: true },
+      });
+    }
+
+    const allProducts = await this.prisma.product.findMany({
       where: { status: 'active', stock: { gt: 0 } },
       take: 10,
       orderBy: { createdAt: 'desc' },
-      select: { title: true, price: true, shopId: true },
+      select: { id: true, title: true, slug: true, price: true, shopId: true, stock: true },
     });
+    const products = matchedProducts.length ? matchedProducts : allProducts;
 
     const shopById = new Map(shops.map((s) => [s.id, s]));
     const fmt = (n: any) =>
       new Intl.NumberFormat('fr-SN', { maximumFractionDigits: 0 }).format(Number(n)) + ' FCFA';
 
-    // Détection d'intention
+    const enriched = products.slice(0, 5).map((p) => ({
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      price: Number(p.price),
+      priceLabel: fmt(p.price),
+      stock: p.stock,
+      shopName: shopById.get(p.shopId)?.name ?? 'Boutique locale',
+      shopSlug: shopById.get(p.shopId)?.slug ?? null,
+    }));
+
+    // 2. Intention (produit trouvé = priorité sur mots génériques)
     let intent = 'DEFAULT';
     if (/prix|njeg|njëg|combien|ñaata|tarif/.test(q)) intent = 'PRICES';
     else if (/stock|dispo|reste|es-tok/.test(q)) intent = 'STOCK';
     else if (/livraison|livrer|yóbbu|adresse|quartier|zone/.test(q)) intent = 'DELIVERY';
-    else if (/boutique|shop|marché|mboro|thiès/.test(q)) intent = 'SHOPS';
+    else if (/boutique|shop|marché|marche|mboro|thiès|thies/.test(q)) intent = 'SHOPS';
     else if (/bonjour|salaam|salut|nanga/.test(q)) intent = 'GREETING';
+    else if (matchedProducts.length) intent = 'PRODUCT_FOUND';
+
+    const result: { answer: string; products?: any[]; query?: string } = { answer: '' };
 
     if (lang === 'WO') {
       switch (intent) {
+        case 'PRODUCT_FOUND':
+          result.answer =
+            'Naka la ñooy jumtukaay yi :\n' +
+            enriched.map((p) => '• *' + p.title + '* : ' + p.priceLabel).join('\n') +
+            '\n\nJël ci link bi ngà jënd.';
+          result.products = enriched;
+          result.query = question;
+          return result;
         case 'PRICES':
-          if (!products.length) return { answer: 'Amul jumtukaay ci butik yi léegi.' };
-          return {
-            answer:
-              'Yii ñooy njëg yi ci butik yi :\n' +
-              products.slice(0, 5).map((p) => `• *${p.title}* : ${fmt(p.price)} (ci ${shopById.get(p.shopId)?.name ?? 'boutique'})`).join('\n'),
-          };
+          result.answer =
+            'Yii ñooy njëg yi ci butik yi :\n' +
+            enriched.map((p) => '• *' + p.title + '* : ' + p.priceLabel).join('\n');
+          result.products = enriched;
+          return result;
         case 'STOCK':
-          if (!products.length) return { answer: 'Amul dara ci es-tok bi léegi.' };
-          return { answer: 'Li am ci es-tok léegi :\n' + products.slice(0, 5).map((p) => `• ${p.title}`).join('\n') };
+          result.answer = enriched.length
+            ? 'Li am ci es-tok léegi :\n' + enriched.map((p) => '• ' + p.title).join('\n')
+            : 'Amul dara ci es-tok bi léegi.';
+          result.products = enriched;
+          return result;
         case 'DELIVERY':
-          return { answer: 'Ci wàllu yóbbu bi, butik yi mën na la yóbbal ci Thiès, Mboro ak li ko wër. Waxal sa repère (marse, jàkka...).' };
+          result.answer =
+            'Ci wàllu yóbbu bi, butik yi mën na la yóbbal ci Thiès, Mboro ak li ko wër. Waxal sa repère (marse, jàkka...).';
+          return result;
         case 'SHOPS':
-          return { answer: 'Butik yi ci JëndCiThiès :\n' + shops.map((s) => `• *${s.name}* — ${s.publicAddress ?? 'Thiès'}`).join('\n') };
+          result.answer =
+            'Butik yi ci JëndCiThiès :\n' +
+            shops.map((s) => '• *' + s.name + '* — ' + (s.publicAddress ?? 'Thiès')).join('\n');
+          return result;
         default:
-          return { answer: 'Salaamalekum ! Wax ma sa laaj ci njëg yi, es-tok bi walla yóbbu bi.' };
+          result.answer = 'Salaamalekum ! Wax ma sa laaj ci njëg yi, es-tok bi walla yóbbu bi.';
+          result.products = enriched;
+          return result;
       }
     }
 
     switch (intent) {
+      case 'PRODUCT_FOUND': {
+        result.answer =
+          'J\'ai trouvé ' + enriched.length + ' produit(s) correspondant à votre recherche :\n' +
+          enriched.map((p) => '• ' + p.title + ' — ' + p.priceLabel + ' chez ' + p.shopName).join('\n') +
+          '\n\nCliquez sur un produit ci-dessous pour le voir.';
+        result.products = enriched;
+        result.query = question;
+        return result;
+      }
       case 'PRICES': {
-        if (!products.length) return { answer: "Je n'ai pas encore de prix à afficher. Les boutiques complètent leurs catalogues." };
-        return {
-          answer:
-            `Voici une sélection de prix réels chez nos commerçants :\n` +
-            products.slice(0, 5).map((p) => `• ${p.title} : ${fmt(p.price)} (${shopById.get(p.shopId)?.name ?? 'Boutique locale'})`).join('\n') +
-            `\n\nVous pouvez commander en ligne ou directement via WhatsApp avec la boutique.`,
-        };
+        result.answer =
+          'Voici une sélection de prix réels chez nos commerçants :\n' +
+          enriched.map((p) => '• ' + p.title + ' : ' + p.priceLabel + ' (' + p.shopName + ')').join('\n') +
+          '\n\nVous pouvez commander en ligne ou directement via WhatsApp avec la boutique.';
+        result.products = enriched;
+        return result;
       }
       case 'STOCK': {
-        if (!products.length) return { answer: 'Aucun produit en stock pour le moment. Revenez très bientôt !' };
-        return { answer: 'Produits actuellement disponibles :\n' + products.slice(0, 5).map((p) => `• ${p.title}`).join('\n') };
+        result.answer = enriched.length
+          ? 'Produits actuellement disponibles :\n' + enriched.map((p) => '• ' + p.title + ' (' + p.stock + ' en stock) — ' + p.shopName).join('\n')
+          : 'Aucun produit en stock pour le moment. Revenez très bientôt !';
+        result.products = enriched;
+        return result;
       }
       case 'DELIVERY': {
-        const addresses = shops.map((s) => `${s.name} (${s.publicAddress ?? 'Mboro/Thiès'})`).slice(0, 3);
-        return {
-          answer:
-            `Nous livrons à Mboro, Thiès et environs grâce à un système de repères locaux (pas besoin de numéro de rue).\n` +
-            `Quelques boutiques disponibles : ${addresses.join(', ')}.\n\n` +
-            `Les modes de paiement acceptés sont Wave, PayDunya et paiement à la livraison en espèces.`,
-        };
+        const addresses = shops.map((s) => s.name + ' (' + (s.publicAddress ?? 'Mboro/Thiès') + ')').slice(0, 3);
+        result.answer =
+          'Nous livrons à Mboro, Thiès et environs grâce à un système de repères locaux (pas besoin de numéro de rue).\n' +
+          'Quelques boutiques disponibles : ' + addresses.join(', ') + '.\n\n' +
+          'Les modes de paiement acceptés sont Wave, PayDunya et paiement à la livraison en espèces.';
+        return result;
       }
       case 'SHOPS': {
-        if (!shops.length) return { answer: 'Aucune boutique active pour le moment.' };
-        return {
-          answer:
-            `Nos boutiques partenaires vérifiées :\n` +
-            shops.map((s) => `• ${s.name} — ${s.publicAddress ?? 'Thiès / Mboro'}${s.phone ? ` (${s.phone})` : ''}`).join('\n'),
-        };
+        result.answer = shops.length
+          ? 'Nos boutiques partenaires vérifiées :\n' +
+            shops.map((s) => '• ' + s.name + ' — ' + (s.publicAddress ?? 'Thiès / Mboro') + (s.phone ? ' (' + s.phone + ')' : '')).join('\n')
+          : 'Aucune boutique active pour le moment.';
+        return result;
       }
-      default:
-        if (products.length > 0) {
-          return {
-            answer:
-              `Bienvenue sur JëndCiThiès !\n` +
-              `Quelques produits disponibles :\n` +
-              products.slice(0, 3).map((p) => `• ${p.title} (${fmt(p.price)})`).join('\n') +
-              `\n\nPosez-moi une question sur les prix, le stock, les boutiques ou la livraison.`,
-          };
+      default: {
+        if (enriched.length) {
+          result.answer =
+            'Bienvenue sur JëndCiThiès !\n' +
+            'Quelques produits disponibles :\n' +
+            enriched.map((p) => '• ' + p.title + ' (' + p.priceLabel + ')').join('\n') +
+            '\n\nPosez-moi une question sur les prix, le stock, les boutiques ou la livraison — ou tapez un nom de produit (en français ou en wolof : ceeb, yapp, soble, kaani, jen...).';
+          result.products = enriched;
+        } else {
+          result.answer =
+            'Salaamalekum ! Je suis votre assistant bilingue (Français / Wolof). Je peux vous renseigner sur les prix, le stock des produits, les boutiques partenaires et les zones de livraison.';
         }
-        return {
-          answer:
-            'Salaamalekum ! Je suis votre assistant bilingue (Français / Wolof). Je peux vous renseigner sur les prix, le stock des produits, les boutiques partenaires et les zones de livraison.',
-        };
+        return result;
+      }
     }
   }
+
 }

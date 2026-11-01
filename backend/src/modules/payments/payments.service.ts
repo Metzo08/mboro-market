@@ -10,6 +10,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ShopsService } from '../shops/shops.service';
 import { InitializePaymentDto } from './dto';
 import { InitializeWavePaymentDto } from './dto/wave-payment.initialize.dto';
+import { SandboxProvider } from './sandbox.provider';
 
 export interface CheckoutSession {
   checkoutUrl: string | null;
@@ -220,6 +221,7 @@ export class PaymentsService {
     private config: ConfigService,
     private wave: WaveProvider,
     private paydunya: PaydunyaProvider,
+    private sandbox: SandboxProvider,
     private shops: ShopsService,
   ) {}
 
@@ -338,6 +340,14 @@ export class PaymentsService {
             apiToken: shopSettings?.paydunyaApiToken ?? null,
           },
         );
+      } else if (provider === 'sandbox' || provider === 'demo') {
+        // Paiement simulé : page sandbox locale, confirmation via webhook signé
+        session = this.sandbox.createCheckout({
+          amount: Number(order.total),
+          currency: order.currency,
+          reference,
+          customerPhone: dto.phone,
+        });
       }
     } catch (e: any) {
       throw new BadRequestException(
@@ -369,7 +379,7 @@ export class PaymentsService {
       status: transaction.status,
       checkoutUrl: session.checkoutUrl,
       providerReference: session.providerReference,
-      sandbox: !session.checkoutUrl,
+      sandbox: !session.checkoutUrl || provider === 'sandbox' || provider === 'demo',
     };
   }
 
@@ -501,5 +511,33 @@ export class PaymentsService {
     }
     
     return { status };
+  }
+
+  /**
+   * Confirmation sandbox : signe le payload avec le même secret que les
+   * providers réels, puis le passe au handler de webhook standard. La
+   * transaction doit être en provider 'sandbox' pour être acceptée.
+   */
+  async sandboxConfirm(payload: any) {
+    if (!payload?.reference) throw new BadRequestException('Référence manquante');
+    const tx = await this.prisma.transaction.findUnique({
+      where: { transactionReference: payload.reference },
+    });
+    if (!tx) throw new NotFoundException('Transaction introuvable');
+    if (tx.provider !== 'sandbox' && tx.provider !== 'demo') {
+      throw new ForbiddenException(
+        'Confirmation sandbox refusée : cette transaction utilise un provider réel',
+      );
+    }
+    // Simuler exactement ce qu'un provider enverrait
+    const webhookPayload = {
+      id: payload.id || `evt_sandbox_${Date.now()}`,
+      reference: payload.reference,
+      amount: payload.amount ?? Number(tx.amount),
+      status: 'SUCCEEDED',
+      providerTransactionId: tx.providerTransactionId || `SANDBOX-${Date.now()}`,
+    };
+    const signature = this.sandbox.signPayload(webhookPayload);
+    return this.handleWebhook('sandbox', webhookPayload, signature, JSON.stringify(webhookPayload));
   }
 }

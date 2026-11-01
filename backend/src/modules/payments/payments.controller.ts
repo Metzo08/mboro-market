@@ -48,4 +48,15 @@ export class PaymentsController {
   refund(@Param('id') id: string, @Body() dto: RefundDto) {
     return this.service.refund(id, dto);
   }
+
+  /**
+   * Confirmation SANDBOX uniquement (démo) : génère la signature HMAC interne
+   * puis traite le webhook comme le ferait un provider réel. Rejeté si le
+   * provider de la transaction n'est pas sandbox.
+   */
+  @Public()
+  @Post('sandbox-confirm')
+  async sandboxConfirm(@Body() payload: any) {
+    return this.service.sandboxConfirm(payload);
+  }
 }
