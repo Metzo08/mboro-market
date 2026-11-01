@@ -432,14 +432,19 @@ export class AiService {
     ].join('\n');
 
     try {
-      const { answer } = await this.llm.chat(
+      const { answer: llmAnswer } = await this.llm.chat(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },
         ],
         300,
       );
-      return answer ?? baseAnswer;
+      if (!llmAnswer) return baseAnswer;
+      // Retirer les doublons de la liste produits déjà affichés en cartes UI
+      const stripped = llmAnswer
+        .replace(/\n?\n?(Cliquez sur un produit[^\n]*)$/g, '')
+        .trim();
+      return stripped.length > 20 ? stripped : baseAnswer;
     } catch {
       return baseAnswer;
     }

@@ -22,15 +22,18 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      const errText = await res.text();
       return NextResponse.json(
-        { answer: "Désolé, l'assistant est momentanément indisponible. Réessayez dans quelques instants." },
+        { answer: "Désolé, l'assistant est momentanément indisponible. Réessayez dans quelques instants.", products: [] },
         { status: 200 },
       );
     }
 
     const data = await res.json();
-    return NextResponse.json({ answer: data.answer || data.content || 'Réponse indisponible.' });
+    return NextResponse.json({
+      answer: data.answer || data.content || 'Réponse indisponible.',
+      products: Array.isArray(data.products) ? data.products : [],
+      query: data.query ?? null,
+    });
   } catch (err: any) {
     return NextResponse.json(
       {
