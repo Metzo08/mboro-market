@@ -1,10 +1,11 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { CartProvider } from '@/components/cart/CartProvider';
 import { AiChatWidget } from '@/components/ai/AiChatWidget';
+import PwaRegistration from '@/components/pwa/PwaRegistration';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,6 +27,16 @@ export const metadata: Metadata = {
     url: 'https://jendcithies.sn',
     images: [{ url: '/favicon.svg', width: 100, height: 100 }],
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'JëndCiThiès',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#115E59',
 };
 
 export default function RootLayout({
@@ -44,6 +55,7 @@ export default function RootLayout({
           <main className="pt-20 min-h-screen">{children}</main>
           <Footer />
           <AiChatWidget />
+          <PwaRegistration />
         </CartProvider>
       </body>
     </html>

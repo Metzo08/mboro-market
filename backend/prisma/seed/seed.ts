@@ -240,8 +240,8 @@ async function main() {
     // Épicerie
     'riz parfumé': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80',
     'riz basmati': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80',
-    'pâtes spaghetti': 'https://images.unsplash.com/photo-1627042633145-b780d842ba45?w=600&q=80',
-    'huile arachide': 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&q=80',
+    'pâtes spaghetti': 'https://images.unsplash.com/photo-1556761223-4c4282c73f77?w=600&q=80',
+    'huile arachide': 'https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?w=600&q=80',
     'sel cuisine': 'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?w=600&q=80',
     'sucre brut': 'https://images.unsplash.com/photo-1709651808265-977ed7ef78c6?w=600&q=80',
     'lait en poudre': 'https://images.unsplash.com/photo-1693996046865-19217d179161?w=600&q=80',
@@ -264,7 +264,6 @@ async function main() {
     'côtes de porc': 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&q=80',
     // Boissons
     'bissap': 'https://images.unsplash.com/photo-1654922704274-cd34f165c5e7?w=600&q=80',
-    'jus de bissap': 'https://images.unsplash.com/photo-1654922704274-cd34f165c5e7?w=600&q=80',
     'eau minérale': 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80',
     'jus de maracouyà': 'https://images.unsplash.com/photo-1604495772376-9657f0035eb5?w=600&q=80',
     'thé à la menthe': 'https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?w=600&q=80',
@@ -279,29 +278,29 @@ async function main() {
     'chargeur usb': 'https://images.unsplash.com/photo-1557767382-97b28f5488e7?w=600&q=80',
     'écouteurs bluetooth': 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=600&q=80',
     // Réparation
-    'réparation écran': 'https://images.unsplash.com/photo-1550041473-d296a3a8a18a?w=600&q=80',
-    'remplacement batterie': 'https://images.unsplash.com/photo-1550041473-d296a3a8a18a?w=600&q=80',
-    'nettoyage smartphone': 'https://images.unsplash.com/photo-1550041473-d296a3a8a18a?w=600&q=80',
+    'réparation écran': 'https://images.unsplash.com/photo-1601600576337-c1d8a0d1373c?w=600&q=80',
+    'remplacement batterie': 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?w=600&q=80',
+    'nettoyage smartphone': 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=80',
     // Matériaux
-    'ciment portland': 'https://images.unsplash.com/photo-1575493438282-4e0fb32d1bdd?w=600&q=80',
-    'sable fin': 'https://images.unsplash.com/photo-1685555809025-0fe60ab6df46?w=600&q=80',
-    'brique': 'https://images.unsplash.com/photo-1585750629386-33bdc1431574?w=600&q=80',
+    'ciment portland': 'https://images.unsplash.com/photo-1516962126636-27ad087061cc?w=600&q=80',
+    'sable fin': 'https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=600&q=80',
+    'brique': 'https://images.unsplash.com/photo-1519643381401-22c77e60520e?w=600&q=80',
     // Tissus
     'bazin riche': 'https://images.unsplash.com/photo-1768212565426-58b089b6386d?w=600&q=80',
-    'pagne wax': 'https://images.unsplash.com/photo-1768212565426-58b089b6386d?w=600&q=80',
-    'japoncoton': 'https://images.unsplash.com/photo-1552710307-537199cd41c0?w=600&q=80',
+    'pagne wax': 'https://images.unsplash.com/photo-1552710307-537199cd41c0?w=600&q=80',
+    'japoncoton': 'https://images.unsplash.com/photo-1627042633145-b780d842ba45?w=600&q=80',
     // Cuisine
     'thieboudienne': 'https://images.unsplash.com/photo-1665400808116-f0e6339b7e9a?w=600&q=80',
     'yassa poulet': 'https://images.unsplash.com/photo-1689155494424-d2337856fe3e?w=600&q=80',
     'maafe': 'https://images.unsplash.com/photo-1730112696140-19e61bb43d36?w=600&q=80',
     // Pâtisserie
-    'pain de campagne': 'https://images.unsplash.com/photo-1598373182133-52452f7691ef?w=600&q=80',
-    'croissant': 'https://images.unsplash.com/photo-1623334044303-241021148842?w=600&q=80',
-    'biscuits sale': 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&q=80',
+    'pain de campagne': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80',
+    'croissant': 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=80',
+    'biscuits sale': 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=600&q=80',
     // Habillement / chaussures
-    'boubou traditionnel': 'https://images.unsplash.com/photo-1648329008114-bce0ec0b5950?w=600&q=80',
-    'tunique bazin': 'https://images.unsplash.com/photo-1648329008114-bce0ec0b5950?w=600&q=80',
-    'pagnes wax': 'https://images.unsplash.com/photo-1768212565426-58b089b6386d?w=600&q=80',
+    'boubou traditionnel': 'https://images.unsplash.com/photo-1618886614638-80e3c103d31a?w=600&q=80',
+    'tunique bazin': 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=600&q=80',
+    'pagnes wax': 'https://images.unsplash.com/photo-1519419691348-3b3433c4c20e?w=600&q=80',
     'sandales enfant': 'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=600&q=80',
     'baskets femme': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
     // Cosmétiques
@@ -365,7 +364,8 @@ async function main() {
       'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?w=600&q=80',
     ],
     reparation: [
-      'https://images.unsplash.com/photo-1550041473-d296a3a8a18a?w=600&q=80',
+      'https://images.unsplash.com/photo-1601600576337-c1d8a0d1373c?w=600&q=80',
+      'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?w=600&q=80',
     ],
     materiaux: [
       'https://images.unsplash.com/photo-1575493438282-4e0fb32d1bdd?w=600&q=80',
@@ -489,14 +489,14 @@ async function main() {
   // Category to shop mapping — chaque boutique a son propre catalogue,
   // pas de duplication entre boutiques (correction de la répétition d'images).
   const SHOP_CATEGORIES_BY_SLUG: Record<string, string[]> = {
-    'mboro-marche': ['epicerie', 'legumes', 'fruits'],
+    'mboro-marche': ['epicerie', 'legumes', 'fruits', 'viandes'],
     'restaurant-baobab': ['cuisine'],
-    'artisan-bazin-mboro': ['tissus', 'habillement'],
-    'epices-du-terroir': ['bouillons', 'boissons', 'epicerie'],
-    'boulangerie-du-coin': ['patisserie', 'epicerie'],
+    'artisan-bazin-mboro': ['tissus', 'habillement', 'chaussures'],
+    'epices-du-terroir': ['bouillons', 'boissons'],
+    'boulangerie-du-coin': ['patisserie'],
     'coiffure-beaute-sen': ['cosmetiques'],
     'materiaux-de-construction': ['materiaux'],
-    'telephonie-mboro': ['telephonie', 'reparation', 'electronique', 'chaussures'],
+    'telephonie-mboro': ['telephonie', 'reparation', 'electronique'],
   };
   const SHOP_CATEGORIES: Record<string, string[]> = {
     RETAIL: ['epicerie', 'legumes', 'fruits', 'viandes'],
@@ -511,6 +511,15 @@ async function main() {
     const shopCategorySlugs = SHOP_CATEGORIES_BY_SLUG[shop.slug] || SHOP_CATEGORIES[shop.type] || ['epicerie'];
     const existingCats = await prisma.category.findMany({ where: { shopId: shop.id } });
     const existingSlugs = new Set(existingCats.map(c => c.slug));
+
+    // Nettoyage idempotent : supprimer les produits de catégories qui ne
+    // sont plus dans le catalogue de cette boutique (évite les doublons
+    // après changement de mapping).
+    const staleCatIds = existingCats.filter(c => !shopCategorySlugs.includes(c.slug)).map(c => c.id);
+    if (staleCatIds.length) {
+      const removed = await prisma.product.deleteMany({ where: { shopId: shop.id, categoryId: { in: staleCatIds } } });
+      if (removed.count) console.log('Removed stale products for', shop.name, ':', removed.count);
+    }
 
     for (const catData of CATEGORIES) {
       if (shopCategorySlugs.includes(catData.slug)) {

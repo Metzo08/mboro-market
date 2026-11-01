@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { AppController } from './app.controller';
 import { PrismaService } from './prisma/prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -46,6 +47,7 @@ import { MediaModule } from './modules/media/media.module';
     AdminModule,
     MediaModule,
   ],
+  controllers: [AppController],
   providers: [PrismaService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
