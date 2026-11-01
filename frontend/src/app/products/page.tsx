@@ -2,7 +2,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/products/ProductCard';
+import { Pagination } from '@/components/ui/Pagination';
+import { EmptyState } from '@/components/ui/Skeletons';
 import { getProducts } from '@/lib/server-api';
+
+const PAGE_SIZE = 24;
 
 export const metadata = {
   title: 'Produits — JëndCiThiès',
@@ -12,18 +16,21 @@ export const metadata = {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string; category?: string; availability?: string }>;
+  searchParams?: Promise<{ q?: string; category?: string; availability?: string; page?: string }>;
 }) {
   // Next.js 16 : searchParams est une Promise, à awaiter
   const sp = (await searchParams) || {};
   const query = sp.q || '';
   const category = sp.category || 'ALL';
   const availability = sp.availability || 'all';
+  const page = Math.max(1, parseInt(sp.page || '1', 10) || 1);
 
   const params: Record<string, string> = {};
   if (query) params.q = query;
   if (category !== 'ALL') params.category = category;
   if (availability !== 'all') params.availability = availability;
+  params.page = String(page);
+  params.limit = String(PAGE_SIZE);
 
   let products: Product[] = [];
   let total = 0;
@@ -128,11 +135,23 @@ export default async function ProductsPage({
         {products.length > 0 ? (
           products.map((p) => <ProductCard key={p.id} product={p} />)
         ) : (
-          <div className="col-span-full text-center py-12 text-gray-500">
-            Aucun produit trouvé. Essayez un autre mot-clé.
-          </div>
+          <EmptyState
+            emoji="🛍️"
+            title="Aucun produit trouvé"
+            message="Essayez un autre mot-clé (français ou wolof : ceeb, yapp, soble, kaani, dibi, bazin...) ou changez de catégorie."
+            actionLabel="Voir toutes les boutiques"
+            actionHref="/shops"
+          />
         )}
       </div>
+
+      <Pagination
+        page={page}
+        total={total}
+        limit={PAGE_SIZE}
+        basePath="/products"
+        extraParams={{ q: query, category, availability }}
+      />
     </div>
   );
 }

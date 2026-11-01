@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 import { getShopBySlug, getProducts } from '@/lib/server-api';
 import { ShopTabs } from '@/components/shops/ShopTabs';
+import { shopJsonLd, JsonLdScript } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,8 +50,11 @@ export default async function ShopDetailPage({ params }: { params: Promise<{ slu
     notFound();
   }
 
+  const jsonLd = shopJsonLd(shop);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <JsonLdScript data={jsonLd} />
       <ShopTabs shop={shop} products={products} />
     </div>
   );

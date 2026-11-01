@@ -28,3 +28,7 @@ export async function getProductBySlug(slug: string) {
 export async function getShopBySlug(slug: string) {
   return serverFetch(`/shops?slug=${encodeURIComponent(slug)}`);
 }
+
+export async function getShopById(id: string) {
+  return serverFetch(`/shops/${encodeURIComponent(id)}`);
+}

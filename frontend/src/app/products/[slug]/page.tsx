@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
-import { Product } from '@/types';
-import { getProductBySlug } from '@/lib/server-api';
+import { Product, Shop } from '@/types';
+import { getProductBySlug, getShopById } from '@/lib/server-api';
 import { ProductDetail } from '@/components/products/ProductDetail';
+import { productJsonLd, JsonLdScript } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,5 +37,20 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  return <ProductDetail product={product} />;
+  // Données structurées Product+Offer : vendeur réel uniquement (CDC §11.2, §10)
+  let shop: Shop | null = null;
+  try {
+    const shopData = await getShopById(product.shopId);
+    shop = (shopData.items?.[0] || shopData) ?? null;
+  } catch {
+    shop = null;
+  }
+  const jsonLd = productJsonLd(product, shop ?? undefined);
+
+  return (
+    <>
+      <JsonLdScript data={jsonLd} />
+      <ProductDetail product={product} />
+    </>
+  );
 }
