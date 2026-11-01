@@ -54,6 +54,53 @@ export class LlmProvider {
 
   /** Appel chat completion avec fallback automatique Groq → OpenRouter. */
   async chat(messages: LlmMessage[], maxTokens = 400): Promise<LlmResult> {
+    const { answer } = await this.chatComplete(messages, maxTokens);
+    return { answer, provider: answer ? (this.groqKey ? 'groq' : 'openrouter') : null };
+  }
+
+  /**
+   * Chat complet en mode STREAMING : retourne un générateur de tokens texte
+   * (delta.content), avec fallback silencieux (null) si aucun provider n'est
+   * disponible. Le générateur tente Groq puis OpenRouter dans l'ordre.
+   */
+  async *streamChat(
+    messages: LlmMessage[],
+    maxTokens = 400,
+  ): AsyncGenerator<{ token: string; provider: string } | { done: true }> {
+    const providers: Array<{ name: 'groq' | 'openrouter'; url: string; key: string | null }> = [
+      { name: 'groq', url: 'https://api.groq.com/openai/v1/chat/completions', key: this.groqKey },
+      { name: 'openrouter', url: 'https://openrouter.ai/api/v1/chat/completions', key: this.openRouterKey },
+    ];
+
+    for (const p of providers) {
+      if (!p.key) continue;
+      let yielded = false;
+      try {
+        const stream = await this.openStream(p.url, p.key, this.modelFor(p.name), messages, maxTokens);
+        if (!stream) continue;
+        for await (const token of stream) {
+          yielded = true;
+          yield { token, provider: p.name };
+        }
+        if (yielded) yield { done: true };
+        return;
+      } catch (e: any) {
+        this.logger.warn(`Stream ${p.name} interrompu (${e?.message ?? 'erreur'})`);
+        // Si on a déjà émis des tokens, on arrête proprement (mi-phrase).
+        if (yielded) {
+          yield { done: true };
+          return;
+        }
+        // Sinon on tente le provider suivant.
+      }
+    }
+    yield { done: true };
+  }
+
+  private async chatComplete(
+    messages: LlmMessage[],
+    maxTokens: number,
+  ): Promise<{ answer: string | null }> {
     if (this.groqKey) {
       const answer = await this.callOpenAiCompatible(
         'https://api.groq.com/openai/v1/chat/completions',
@@ -62,7 +109,7 @@ export class LlmProvider {
         messages,
         maxTokens,
       );
-      if (answer) return { answer, provider: 'groq' };
+      if (answer) return { answer };
     }
     if (this.openRouterKey) {
       const answer = await this.callOpenAiCompatible(
@@ -72,9 +119,87 @@ export class LlmProvider {
         messages,
         maxTokens,
       );
-      if (answer) return { answer, provider: 'openrouter' };
+      if (answer) return { answer };
     }
-    return { answer: null, provider: null };
+    return { answer: null };
+  }
+
+  /**
+   * Ouvre un flux SSE OpenAI-compatible (stream: true) et retourne un
+   * générateur de deltas texte. null si le flux ne peut pas être ouvert.
+   */
+  private async openStream(
+    url: string,
+    apiKey: string,
+    model: string,
+    messages: LlmMessage[],
+    maxTokens: number,
+  ): Promise<AsyncGenerator<string> | null> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15_000) as unknown as ReturnType<typeof setTimeout>;
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.4,
+          max_tokens: Math.max(maxTokens, 400),
+          stream: true,
+          reasoning_effort: 'low',
+        }),
+        signal: controller.signal,
+      });
+    } catch (e: any) {
+      clearTimeout(timeout);
+      this.logger.warn(`Stream ${model} indisponible (${e?.message ?? 'erreur'})`);
+      return null;
+    }
+    clearTimeout(timeout);
+
+    if (!res.ok || !res.body) {
+      this.logger.warn(`Stream ${model} HTTP ${res.status}`);
+      return null;
+    }
+
+    // Décodage incrémental du SSE : chaque ligne "data: {...}" contient un
+    // delta.choices[0].delta.content ; "data: [DONE]" termine le flux.
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    async function* iterate(): AsyncGenerator<string> {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data:')) continue;
+            const payload = trimmed.slice(5).trim();
+            if (payload === '[DONE]') return;
+            try {
+              const json = JSON.parse(payload);
+              const delta = json?.choices?.[0]?.delta?.content;
+              if (typeof delta === 'string' && delta) yield delta;
+            } catch {
+              // Chunk JSON partiel/incomplet — ignoré, le buffer le complètera.
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    }
+    return iterate();
   }
 
   private async callOpenAiCompatible(

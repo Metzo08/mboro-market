@@ -6,12 +6,14 @@ import {
   Param,
   UseGuards,
   Req,
+  Res,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AiService } from './ai.service';
 import { CreateConversationDto, SendMessageDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../../common/decorators/index';
+import { writeSseStream } from './sse.utils';
 
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
@@ -44,5 +46,20 @@ export class AiController {
   async publicAsk(@Body() body: { question: string; language?: 'FR' | 'WO' | 'EN' }) {
     const lang = (body.language || 'FR').toUpperCase() === 'WO' ? 'WO' : 'FR';
     return this.service.publicAsk(body.question, lang);
+  }
+
+  /**
+   * Assistant IA public en STREAMING SSE — réponses token par token.
+   * Compatible EventSource/fetch-ReadableStream côté client.
+   */
+  @Public()
+  @Throttle({ default: { limit: 15, ttl: 60_000 } })
+  @Post('public-ask-stream')
+  async publicAskStream(
+    @Body() body: { question: string; language?: 'FR' | 'WO' | 'EN' },
+    @Res() res: any,
+  ) {
+    const lang = (body.language || 'FR').toUpperCase() === 'WO' ? 'WO' : 'FR';
+    await writeSseStream(res, this.service.publicAskStream(body.question, lang));
   }
 }

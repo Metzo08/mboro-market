@@ -46,18 +46,91 @@ export function AiChatWidget() {
     setLoading(true);
     setError('');
 
+    // Bubble assistant vide, remplie token par token par le flux SSE.
+
     try {
-      const res = await fetch('/api/assistant/ask', {
+      const res = await fetch('/api/assistant/stream', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
         body: JSON.stringify({ question: userContent, language: lang }),
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setMessages((prev) => [...prev, { role: 'ASSISTANT', content: data.answer, products: data.products }]);
+      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let acc = '';
+      let products: any[] | undefined = undefined;
+      let assistantIdx = -1;
+
+      const applyUpdate = () => {
+        if (assistantIdx < 0) {
+          setMessages((prev) => {
+            assistantIdx = prev.length - 1;
+            const copy = [...prev];
+            copy[assistantIdx] = { role: 'ASSISTANT', content: acc, products };
+            return copy;
+          });
+        } else {
+          setMessages((prev) => {
+            const copy = [...prev];
+            copy[assistantIdx] = { role: 'ASSISTANT', content: acc, products };
+            return copy;
+          });
+        }
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          let evt: any;
+          try {
+            evt = JSON.parse(trimmed.slice(5).trim());
+          } catch {
+            continue;
+          }
+          if (evt.type === 'token') {
+            acc += evt.value;
+            applyUpdate();
+          } else if (evt.type === 'products') {
+            products = evt.products;
+            applyUpdate();
+          } else if (evt.type === 'error') {
+            setError(evt.message);
+          }
+          // 'done' : rien à faire, la boucle se termine quand le flux ferme.
+        }
+      }
+
+      // Flux terminé sans aucun token (provider down + règles déjà gérées côté
+      // backend en un seul token, donc acc devrait être non vide ici).
+      if (acc.length === 0 && !products?.length) {
+        setMessages((prev) => {
+          const copy = [...prev];
+          if (copy[copy.length - 1]?.role === 'ASSISTANT' && copy[copy.length - 1].content === '') {
+            copy.pop();
+          }
+          return copy;
+        });
+        setError("L'assistant n'a pas pu répondre. Réessayez.");
+      }
     } catch (err: any) {
       setError(err.message || 'Erreur de connexion à l\'assistant');
+      // Nettoyer la bulle vide si le flux a échoué avant tout token.
+      setMessages((prev) => {
+        const copy = [...prev];
+        if (copy[copy.length - 1]?.role === 'ASSISTANT' && copy[copy.length - 1].content === '') {
+          copy.pop();
+        }
+        return copy;
+      });
     } finally {
       setLoading(false);
     }
